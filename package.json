@@ -1,5 +1,5 @@
 {
-  "name": "vue-test",
+  "name": "vue-jianshu",
   "version": "1.0.0",
   "description": "A Vue.js project",
   "author": "jinkun2014 <jinkun2014@163.com>",
@@ -12,7 +12,8 @@
   "dependencies": {
     "element-ui": "^2.4.6",
     "vue": "^2.5.2",
-    "vue-router": "^3.0.1"
+    "vue-router": "^3.0.1",
+    "vuedraggable": "^2.16.0"
   },
   "devDependencies": {
     "autoprefixer": "^7.1.2",

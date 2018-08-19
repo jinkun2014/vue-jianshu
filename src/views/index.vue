@@ -9,15 +9,39 @@
         </div>
         <!-- 新建文集 -->
         <div style="padding: 0 15px;">
-          <el-button type="text" icon="el-icon-edit" style="color:#fff" @click="show = !show">新建文集</el-button>
+          <el-button
+            type="text"
+            icon="el-icon-edit"
+            style="color:#fff;width: 90%;text-align: left"
+            @click="category.show = !category.show">
+            新建文集
+          </el-button>
         </div>
         <!-- 新建文集表单 -->
         <div style="padding: 0 15px;">
           <el-collapse-transition>
-            <div v-if="show">
-              <input type="text" placeholder="请输入文集名..." style="width: 90%;height:25px;color: #ccc;background-color: #595959;border: 1px solid #333;padding: 4px 6px;outline: 0;margin-bottom: 5px;"/>
-              <el-button round size="mini" style="background: transparent;color:#42c02e;border: 1px solid #42c02e;">提交</el-button>
-              <el-button type="text" size="mini" style="color:#ccc" @click="show = false">取消</el-button>
+            <div v-if="category.show">
+              <input
+                ref="cname"
+                type="text"
+                v-model="category.form.name"
+                autofocus="category.show"
+                placeholder="请输入文集名..."
+                style="width: 90%;height:25px;color: #ccc;background-color: #595959;border: 1px solid #333;padding: 4px 6px;outline: 0;margin-bottom: 5px;"/>
+              <el-button
+                round
+                size="mini"
+                style="background: transparent;color:#42c02e;border: 1px solid #42c02e;"
+                @click="onCategoryEditSubmit()">
+                提交
+              </el-button>
+              <el-button
+                type="text"
+                size="mini"
+                style="color:#ccc"
+                @click="category.show = false">
+                取消
+              </el-button>
               <div style="height: 10px;"></div>
             </div>
           </el-collapse-transition>
@@ -25,52 +49,48 @@
         <!-- 文集列表 -->
         <div>
           <ul class="category-list">
-            <li class="item active">
-              <span class="text">Linux</span>
-              <el-dropdown trigger="click" size="mini" style="float: right">
-                <el-button type="text" icon="el-icon-setting" style="color:#f2f2f2"></el-button>
-                <el-dropdown-menu slot="dropdown">
-                  <el-dropdown-item>
-                    <el-button
-                      type="text"
-                      style="color: #333">
-                      修改文集
-                    </el-button>
-                  </el-dropdown-item>
-                  <el-dropdown-item>
-                    <el-button
-                      type="text"
-                      style="color: #333">
-                      删除文集
-                    </el-button>
-                  </el-dropdown-item>
-                </el-dropdown-menu>
-              </el-dropdown>
-            </li>
-            <li class="item">
-              <span class="text">Hbase</span>
-              <el-dropdown trigger="click" size="mini" style="float: right">
-                <el-button type="text" icon="el-icon-setting" style="color:#f2f2f2"></el-button>
-                <el-dropdown-menu slot="dropdown">
-                  <el-dropdown-item>
-                    <el-button
-                      type="text"
-                      style="color: #333">
-                      修改文集
-                    </el-button>
-                  </el-dropdown-item>
-                  <el-dropdown-item>
-                    <el-button
-                      type="text"
-                      style="color: #333">
-                      删除文集
-                    </el-button>
-                  </el-dropdown-item>
-                </el-dropdown-menu>
-              </el-dropdown>
-            </li>
+            <draggable v-model="category.categories" @update="datadragEnd">
+              <template v-for="(c, index) in category.categories">
+                <li class="item" :class="{active:index==category.currentCategory.index}" @click="onCategoryClick(index)">
+                  <span class="text">{{c.name}}</span>
+                  <el-dropdown v-if="index==category.currentCategory.index" trigger="click" size="mini" style="float: right">
+                    <el-button type="text" icon="el-icon-setting" style="color:#f2f2f2"></el-button>
+                    <el-dropdown-menu slot="dropdown">
+                      <el-dropdown-item>
+                        <el-button
+                          type="text"
+                          style="color: #333"
+                          @click="onCategoryEdit(index)">
+                          修改文集
+                        </el-button>
+                      </el-dropdown-item>
+                      <el-dropdown-item>
+                        <el-button
+                          type="text"
+                          style="color: #333"
+                          @click="onCategoryDel(index)">
+                          删除文集
+                        </el-button>
+                      </el-dropdown-item>
+                    </el-dropdown-menu>
+                  </el-dropdown>
+                </li>
+              </template>
+            </draggable>
           </ul>
         </div>
+        <!-- 编辑文集 -->
+        <el-dialog title="请输入新文集名" :visible.sync="category.dialogFormVisible" width="20%">
+          <el-form :model="category.form">
+            <el-form-item>
+              <el-input v-model="category.form.name" auto-complete="off"></el-input>
+            </el-form-item>
+          </el-form>
+          <div slot="footer" class="dialog-footer">
+            <el-button @click="category.dialogFormVisible = false">取 消</el-button>
+            <el-button type="primary" @click="onCategoryEditSubmit()">确 定</el-button>
+          </div>
+        </el-dialog>
       </div>
     </el-col>
 
@@ -151,7 +171,9 @@
     <!-- 文章内容 -->
     <el-col :span="14" style="height: 100%;overflow:auto;">
       <div style="background: #fff;height: 100%;border-left: 1px solid #ccc;overflow:hidden;">
-        <div style="height: 20px;background: #ccc"></div>
+        <div style="height: 20px;">
+          <span style="float: right">已保存</span>
+        </div>
         <div>
           <input type="text" class="title" value="2018-08-16"/>
         </div>
@@ -162,15 +184,173 @@
 </template>
 
 <script>
+  import draggable from 'vuedraggable'
+
   export default {
+    components: {
+      draggable
+    },
     data() {
       return {
-        show: false,
-        form: {
-          name: '',
-        }
+        category: {
+          show: false,
+          form: {
+            name: '',
+          },
+          categories: [
+            {
+              id: 1,
+              seq: 0,
+              name: "Hbase"
+            },
+            {
+              id: 2,
+              seq: 1,
+              name: "Hadoop"
+            },
+            {
+              id: 3,
+              seq: 2,
+              name: "Linux"
+            },
+            {
+              id: 4,
+              seq: 3,
+              name: "Spark"
+            }
+          ],
+          currentCategory: {
+            index: 0
+          },
+          dialogFormVisible: false
+        },
       }
     },
+    watch: {
+      // 深度监听
+      "category.show"() {
+        let vm = this;
+        if (!vm.category.show) {
+          vm.category.form.id = null;
+          vm.category.form.name = "";
+        }
+      },
+    },
+    methods: {
+      onCategoryClick(index) {
+        let vm = this;
+        vm.category.currentCategory.index = index;
+        console.log('当前选中 :' + vm.category.categories[index].id + "," + vm.category.categories[index].name);
+      },
+      onCategoryAddSubmit() {
+        let vm = this;
+        let params = {
+          "name": vm.category.form.name
+        };
+        vm.saveCategory(params);
+      },
+      onCategoryEdit(index) {
+        let vm = this;
+        vm.category.form.id = vm.category.categories[index].id;
+        vm.category.form.name = vm.category.categories[index].name;
+        vm.category.dialogFormVisible = true;
+      },
+      onCategoryEditSubmit() {
+        let vm = this;
+        let params = {
+          "id": vm.category.form.id,
+          "name": vm.category.form.name
+        };
+        vm.saveCategory(params);
+      },
+      onCategoryDel(index) {
+        let vm = this;
+        vm.$confirm('此操作将永久删除该文件, 是否继续?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          let params = {
+            "id": vm.category.categories[index].id
+          };
+          vm.delCategory(params);
+        }).catch(() => {
+          this.$message({
+            type: 'info',
+            message: '已取消删除'
+          });
+        });
+      },
+      saveCategory(params) {
+        let vm = this;
+
+        if (params.id) {
+          for (var i = 0; i < vm.category.categories.length; i++) {
+            if (vm.category.categories[i].id == params.id) {
+              vm.category.categories[i].name = params.name;
+            }
+          }
+
+          // 还原修改数据
+          vm.category.dialogFormVisible = false;
+        } else {
+          let categories = new Array();
+          categories.push({id: new Date().getMilliseconds(), name: params.name, seq: 0});
+          for (var i = 0; i < vm.category.categories.length; i++) {
+            categories.push(vm.category.categories[i]);
+          }
+          vm.category.categories = categories;
+
+          // 还原新增数据
+          vm.category.show = false;
+
+          vm.category.currentCategory.index = 0;
+        }
+
+        // 清空表单
+        vm.category.form.id = null;
+        vm.category.form.name = "";
+      },
+      delCategory(params) {
+        let vm = this;
+
+        if (params.id) {
+          let categories = new Array();
+          for (var i = 0; i < vm.category.categories.length; i++) {
+            if (params.id != vm.category.categories[i].id) {
+              categories.push(vm.category.categories[i]);
+            }
+          }
+          vm.category.categories = categories;
+
+          // 还原新增数据
+          vm.category.show = false;
+
+          vm.category.currentCategory.index = 0;
+
+          this.$message({
+            type: 'success',
+            message: '删除成功!'
+          });
+        }
+      },
+      loadArticleList(categoryId) {
+
+      },
+      datadragEnd(evt) {
+        let vm = this;
+        console.log('拖动前的索引 :' + evt.oldIndex);
+        console.log('拖动后的索引 :' + evt.newIndex);
+
+        if (evt.oldIndex == vm.category.currentCategory.index) {
+          vm.category.currentCategory.index = evt.newIndex;
+        }
+
+        for (var i = 0; i < vm.category.categories.length; i++) {
+          console.log('拖动后的分类 :' + vm.category.categories[i].name);
+        }
+      },
+    }
   }
 </script>
 
@@ -240,7 +420,7 @@
     position: relative;
     cursor: pointer;
     border-bottom: 1px solid #ccc;
-    line-height: 60px;
+    line-height: 65px;
     list-style: none;
     -webkit-user-select: none;
     -moz-user-select: none;
