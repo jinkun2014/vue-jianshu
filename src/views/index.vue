@@ -169,26 +169,32 @@
     </el-col>
 
     <!-- 文章内容 -->
-    <el-col :span="14" style="height: 100%;overflow:auto;">
-      <div style="background: #fff;height: 100%;border-left: 1px solid #ccc;overflow:hidden;">
-        <div style="height: 20px;">
-          <span style="float: right">已保存</span>
-        </div>
-        <div>
+    <el-col :span="14" style="height: 100%;overflow:hidden;">
+      <div style="background: #fff;height: 100%;border-left: 1px solid #ccc;">
+        <el-row>
+          <span style="height:20px;float: right;color:#999;">已保存</span>
+        </el-row>
+        <el-row>
           <input type="text" class="title" value="2018-08-16"/>
-        </div>
-        <div style="height: 20px;background: #ccc"></div>
+        </el-row>
+        <el-row style="height: calc(100% - 64px);">
+            <mavonEditor v-model="article.content"/>
+        </el-row>
       </div>
     </el-col>
   </el-row>
 </template>
 
 <script>
+  // 拖拽排序
   import draggable from 'vuedraggable'
+  // Markdown
+  import mavonEditor from '../components/editor'
 
   export default {
     components: {
-      draggable
+      draggable,
+      mavonEditor
     },
     data() {
       return {
@@ -224,6 +230,9 @@
           },
           dialogFormVisible: false
         },
+        article: {
+          content: ""
+        }
       }
     },
     watch: {
@@ -492,7 +501,7 @@
 
   .title {
     width: 90%;
-    padding: 0 80px 10px 40px;
+    padding: 0 80px 10px 30px;
     margin-bottom: 0;
     border: none;
     font-size: 30px;
