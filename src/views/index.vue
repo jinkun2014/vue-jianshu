@@ -49,7 +49,7 @@
         <!-- 文集列表 -->
         <div>
           <ul class="category-list">
-            <draggable v-model="category.categories" @update="datadragEnd">
+            <draggable v-model="category.categories" @update="categoryDragEnd">
               <template v-for="(c, index) in category.categories">
                 <li class="item" :class="{active:index==category.currentCategory.index}" @click="onCategoryClick(index)">
                   <span class="text">{{c.name}}</span>
@@ -103,7 +103,7 @@
             <i class="el-icon-edit"></i>
             <span class="text">新建文章</span>
           </li>
-          <draggable v-model="article.articles" @update="datadragEnd">
+          <draggable v-model="article.articles" @update="articleDragEnd">
             <template v-for="(c, index) in article.articles">
               <li class="item" :class="{active:index==article.currentArticle.index}" @click="onArticleClick(index)">
                 <span class="text">{{c.name}}</span>
@@ -345,14 +345,7 @@
           });
         }
       },
-      loadArticleList(categoryId) {
-
-      },
-      onArticleClick(index) {
-        let vm = this;
-        vm.article.currentArticle.index = index;
-      },
-      datadragEnd(evt) {
+      categoryDragEnd(evt) {
         let vm = this;
         console.log('拖动前的索引 :' + evt.oldIndex);
         console.log('拖动后的索引 :' + evt.newIndex);
@@ -363,6 +356,26 @@
 
         for (var i = 0; i < vm.category.categories.length; i++) {
           console.log('拖动后的分类 :' + vm.category.categories[i].name);
+        }
+      },
+      loadArticleList(categoryId) {
+
+      },
+      onArticleClick(index) {
+        let vm = this;
+        vm.article.currentArticle.index = index;
+      },
+      articleDragEnd(evt) {
+        let vm = this;
+        console.log('拖动前的索引 :' + evt.oldIndex);
+        console.log('拖动后的索引 :' + evt.newIndex);
+
+        if (evt.oldIndex == vm.article.currentArticle.index) {
+          vm.article.currentArticle.index = evt.newIndex;
+        }
+
+        for (var i = 0; i < vm.article.articles.length; i++) {
+          console.log('拖动后的分类 :' + vm.article.articles[i].name);
         }
       },
     }
