@@ -22,17 +22,16 @@
           <el-collapse-transition>
             <div v-if="category.show">
               <input
-                ref="cname"
+                v-focus
                 type="text"
                 v-model="category.form.name"
-                autofocus="category.show"
                 placeholder="请输入文集名..."
                 style="width: 90%;height:25px;color: #ccc;background-color: #595959;border: 1px solid #333;padding: 4px 6px;outline: 0;margin-bottom: 5px;"/>
               <el-button
                 round
                 size="mini"
                 style="background: transparent;color:#42c02e;border: 1px solid #42c02e;"
-                @click="onCategoryEditSubmit()">
+                @click="onCategoryAddSubmit()">
                 提交
               </el-button>
               <el-button
@@ -51,17 +50,20 @@
           <ul class="category-list">
             <draggable v-model="category.categories" @update="categoryDragEnd">
               <template v-for="(c, index) in category.categories">
-                <li class="item" :class="{active:index==category.currentCategory.index}" @click="onCategoryClick(index)">
+                <li class="item" :class="{active:c.id==category.currentCategory.id}" @click="onCategoryClick(c.id)">
                   <span class="text">{{c.name}}</span>
-                  <el-dropdown v-if="index==category.currentCategory.index" trigger="click" size="mini"
+                  <el-dropdown v-if="c.id==category.currentCategory.id"
+                               trigger="click"
+                               size="mini"
                                style="float: right;height: 10px;width:10px;margin: 15px;">
-                    <el-button type="text" icon="el-icon-setting" style="color:#f2f2f2;position: absolute;top: -15px;left: -8px;"></el-button>
+                    <el-button type="text" icon="el-icon-setting"
+                               style="color:#f2f2f2;position: absolute;top: -15px;left: -8px;"/>
                     <el-dropdown-menu slot="dropdown">
                       <el-dropdown-item>
                         <el-button
                           type="text"
                           style="color: #333"
-                          @click="onCategoryEdit(index)">
+                          @click="onCategoryEdit(c.id,c.name)">
                           修改文集
                         </el-button>
                       </el-dropdown-item>
@@ -69,7 +71,7 @@
                         <el-button
                           type="text"
                           style="color: #333"
-                          @click="onCategoryDel(index)">
+                          @click="onCategoryDel(c.id)">
                           删除文集
                         </el-button>
                       </el-dropdown-item>
@@ -81,14 +83,14 @@
           </ul>
         </div>
         <!-- 编辑文集 -->
-        <el-dialog title="请输入新文集名" :visible.sync="category.dialogFormVisible" width="20%">
+        <el-dialog title="请输入新文集名" :visible.sync="category.editDialogShow" width="20%">
           <el-form :model="category.form">
             <el-form-item>
               <el-input v-model="category.form.name" auto-complete="off"></el-input>
             </el-form-item>
           </el-form>
           <div slot="footer" class="dialog-footer">
-            <el-button @click="category.dialogFormVisible = false">取 消</el-button>
+            <el-button @click="category.editDialogShow = false">取 消</el-button>
             <el-button type="primary" @click="onCategoryEditSubmit()">确 定</el-button>
           </div>
         </el-dialog>
@@ -104,10 +106,10 @@
             <span class="text">新建文章</span>
           </li>
           <draggable v-model="article.articles" @update="articleDragEnd">
-            <template v-for="(c, index) in article.articles">
-              <li class="item" :class="{active:index==article.currentArticle.index}" @click="onArticleClick(index)">
-                <span class="text">{{c.name}}</span>
-                <el-dropdown v-if="index==article.currentArticle.index" trigger="click" size="mini"
+            <template v-for="(a, index) in article.articles">
+              <li class="item" :class="{active:a.id==article.currentArticle.id}" @click="onArticleClick(a.id)">
+                <span class="text">{{a.name}}</span>
+                <el-dropdown v-if="a.id==article.currentArticle.id" trigger="click" size="mini"
                              style="float: right;height: 10px;width: 10px;margin-top: 35px;">
                   <el-button type="text" icon="el-icon-setting" style="color:#333;position:absolute;top: -15px;left: -8px"></el-button>
                   <el-dropdown-menu slot="dropdown">
@@ -128,7 +130,8 @@
                     <el-dropdown-item>
                       <el-button
                         type="text"
-                        style="color: #333">
+                        style="color: #333"
+                        @click="onArticleDel(a.id)">
                         删除文章
                       </el-button>
                     </el-dropdown-item>
@@ -203,9 +206,9 @@
             }
           ],
           currentCategory: {
-            index: 0
+            id: 1,
           },
-          dialogFormVisible: false
+          editDialogShow: false
         },
         article: {
           content: "```java\npublic class Java{\n  public static void main(String[] args) {\n    System.out.println(\"Hello World!\");\n  }\n}\n```",
@@ -213,26 +216,26 @@
             {
               id: 1,
               seq: 0,
-              name: "Hbase"
+              name: "2018-08-10"
             },
             {
               id: 2,
               seq: 1,
-              name: "Hadoop"
+              name: "2018-08-11"
             },
             {
               id: 3,
               seq: 2,
-              name: "Linux"
+              name: "2018-08-12"
             },
             {
               id: 4,
               seq: 3,
-              name: "Spark"
+              name: "2018-08-13"
             }
           ],
           currentArticle: {
-            index: 0
+            id: 1
           },
         }
       }
@@ -246,12 +249,19 @@
           vm.category.form.name = "";
         }
       },
+      "category.editDialogShow"() {
+        let vm = this;
+        if (!vm.category.editDialogShow) {
+          vm.category.form.id = null;
+          vm.category.form.name = "";
+        }
+      },
     },
     methods: {
-      onCategoryClick(index) {
+      onCategoryClick(id) {
+        console.log('当前选中 :' + id);
         let vm = this;
-        vm.category.currentCategory.index = index;
-        console.log('当前选中 :' + vm.category.categories[index].id + "," + vm.category.categories[index].name);
+        vm.category.currentCategory.id = id;
       },
       onCategoryAddSubmit() {
         let vm = this;
@@ -260,11 +270,11 @@
         };
         vm.saveCategory(params);
       },
-      onCategoryEdit(index) {
+      onCategoryEdit(id, name) {
         let vm = this;
-        vm.category.form.id = vm.category.categories[index].id;
-        vm.category.form.name = vm.category.categories[index].name;
-        vm.category.dialogFormVisible = true;
+        vm.category.form.id = id;
+        vm.category.form.name = name;
+        vm.category.editDialogShow = true;
       },
       onCategoryEditSubmit() {
         let vm = this;
@@ -274,7 +284,7 @@
         };
         vm.saveCategory(params);
       },
-      onCategoryDel(index) {
+      onCategoryDel(id) {
         let vm = this;
         vm.$confirm('此操作将永久删除该文件, 是否继续?', '提示', {
           confirmButtonText: '确定',
@@ -282,7 +292,7 @@
           type: 'warning'
         }).then(() => {
           let params = {
-            "id": vm.category.categories[index].id
+            "id": id
           };
           vm.delCategory(params);
         }).catch(() => {
@@ -303,24 +313,22 @@
           }
 
           // 还原修改数据
-          vm.category.dialogFormVisible = false;
+          vm.category.editDialogShow = false;
         } else {
           let categories = new Array();
-          categories.push({id: new Date().getMilliseconds(), name: params.name, seq: 0});
+          let n = {id: new Date().getMilliseconds(), name: params.name, seq: 0};
+          categories.push(n);
           for (var i = 0; i < vm.category.categories.length; i++) {
             categories.push(vm.category.categories[i]);
           }
           vm.category.categories = categories;
 
-          // 还原新增数据
+          // 隐藏编辑对话框
           vm.category.show = false;
 
-          vm.category.currentCategory.index = 0;
+          // 选中新增分类
+          vm.category.currentCategory.id = n.id;
         }
-
-        // 清空表单
-        vm.category.form.id = null;
-        vm.category.form.name = "";
       },
       delCategory(params) {
         let vm = this;
@@ -337,8 +345,6 @@
           // 还原新增数据
           vm.category.show = false;
 
-          vm.category.currentCategory.index = 0;
-
           this.$message({
             type: 'success',
             message: '删除成功!'
@@ -347,13 +353,6 @@
       },
       categoryDragEnd(evt) {
         let vm = this;
-        console.log('拖动前的索引 :' + evt.oldIndex);
-        console.log('拖动后的索引 :' + evt.newIndex);
-
-        if (evt.oldIndex == vm.category.currentCategory.index) {
-          vm.category.currentCategory.index = evt.newIndex;
-        }
-
         for (var i = 0; i < vm.category.categories.length; i++) {
           console.log('拖动后的分类 :' + vm.category.categories[i].name);
         }
@@ -361,19 +360,48 @@
       loadArticleList(categoryId) {
 
       },
-      onArticleClick(index) {
+      onArticleClick(id) {
         let vm = this;
-        vm.article.currentArticle.index = index;
+        vm.article.currentArticle.id = id;
+      },
+      onArticleDel(id) {
+        let vm = this;
+        vm.$confirm('此操作将永久删除该文件, 是否继续?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+          let params = {
+            "id": id
+          };
+          vm.delArticle(params);
+        }).catch(() => {
+          this.$message({
+            type: 'info',
+            message: '已取消删除'
+          });
+        });
+      },
+      delArticle(params) {
+        let vm = this;
+
+        if (params.id) {
+          let articles = new Array();
+          for (var i = 0; i < vm.article.articles.length; i++) {
+            if (params.id != vm.article.articles[i].id) {
+              articles.push(vm.article.articles[i]);
+            }
+          }
+          vm.article.articles = articles;
+
+          this.$message({
+            type: 'success',
+            message: '删除成功!'
+          });
+        }
       },
       articleDragEnd(evt) {
         let vm = this;
-        console.log('拖动前的索引 :' + evt.oldIndex);
-        console.log('拖动后的索引 :' + evt.newIndex);
-
-        if (evt.oldIndex == vm.article.currentArticle.index) {
-          vm.article.currentArticle.index = evt.newIndex;
-        }
-
         for (var i = 0; i < vm.article.articles.length; i++) {
           console.log('拖动后的分类 :' + vm.article.articles[i].name);
         }
