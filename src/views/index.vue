@@ -108,9 +108,9 @@
           <draggable v-model="article.articles" @update="articleDragEnd">
             <template v-for="(a, index) in article.articles">
               <li class="item" :class="{active:a.id==article.currentArticle.id}" @click="onArticleClick(a.id)">
-                <span class="text">{{a.name}}</span>
+                <span class="text" style="display: block;height: 60px;line-height: 60px">{{a.name}}</span>
                 <el-dropdown v-if="a.id==article.currentArticle.id" trigger="click" size="mini"
-                             style="float: right;height: 10px;width: 10px;margin-top: 35px;">
+                             style="float: right;height: 10px;width: 10px;margin-top: -25px;">
                   <el-button type="text" icon="el-icon-setting" style="color:#333;position:absolute;top: -15px;left: -8px"></el-button>
                   <el-dropdown-menu slot="dropdown">
                     <el-dropdown-item>
@@ -137,6 +137,10 @@
                     </el-dropdown-item>
                   </el-dropdown-menu>
                 </el-dropdown>
+                <div style="display: block;line-height: 20px;font-size: 12px">
+                  <span>5 条评论</span>
+                  <span>1.5亿 次浏览</span>
+                </div>
               </li>
             </template>
           </draggable>
@@ -447,6 +451,10 @@
 
   .category-list .item .text {
     width: 100%;
+    overflow: hidden;
+    -o-text-overflow: ellipsis;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .category-list .item.active {
@@ -515,8 +523,11 @@
 
   .article-list .item .text {
     color: #333;
-    width: 100%;
-    line-height: 60px;
+    width: 90%;
+    overflow: hidden;
+    -o-text-overflow: ellipsis;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .article-list .item.active {
