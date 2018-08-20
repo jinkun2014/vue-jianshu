@@ -1,12 +1,13 @@
 <template>
   <div id="editor">
     <mavon-editor
+      :value="value"
       :toolbars="toolbars"
-      :subfield="subfield"
+      :subfield="true"
+      :defaultOpen="defaultOpen"
       :scrollStyle="false"
       codeStyle="github"
       @fullScreen="$fullScreen"
-      @subfieldToggle="$subfieldToggle"
       style="height: 100%"/>
   </div>
 </template>
@@ -21,9 +22,10 @@
       mavonEditor
       // or 'mavon-editor': mavonEditor
     },
+    props:['value'],
     data() {
       return {
-        subfield: false,
+        defaultOpen: "edit",
         toolbars: {
           bold: true, // 粗体
           italic: true, // 斜体
@@ -38,7 +40,7 @@
           ul: false, // 无序列表
           link: false, // 链接
           imagelink: true, // 图片链接
-          code: false, // code
+          code: true, // code
           table: false, // 表格
           fullscreen: true, // 全屏编辑
           readmodel: false, // 沉浸式阅读
@@ -56,23 +58,14 @@
           aligncenter: false, // 居中
           alignright: false, // 右对齐
           /* 2.2.1 */
-          subfield: true, // 单双栏模式
+          subfield: false, // 单双栏模式
           preview: false, // 预览
         }
       }
     },
     methods: {
       $fullScreen(status, value) {
-        let vm = this;
-        console.info(status)
-        //暂时不管用
-        //vm.subfield = status;
-      },
-      $subfieldToggle(status, value) {
-        let vm = this;
-        console.info(status)
-        //暂时不管用
-        //vm.subfield = status;
+        this.defaultOpen = status ? 'preview' : 'edit';
       }
     }
   }
@@ -94,7 +87,7 @@
   }
 
   /*去掉编辑器阴影*/
-  .v-note-wrapper .v-note-op .op-icon-divider{
+  .v-note-wrapper .v-note-op .op-icon-divider {
     display: none !important;
   }
 

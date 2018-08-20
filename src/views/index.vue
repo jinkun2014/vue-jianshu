@@ -53,8 +53,9 @@
               <template v-for="(c, index) in category.categories">
                 <li class="item" :class="{active:index==category.currentCategory.index}" @click="onCategoryClick(index)">
                   <span class="text">{{c.name}}</span>
-                  <el-dropdown v-if="index==category.currentCategory.index" trigger="click" size="mini" style="float: right">
-                    <el-button type="text" icon="el-icon-setting" style="color:#f2f2f2"></el-button>
+                  <el-dropdown v-if="index==category.currentCategory.index" trigger="click" size="mini"
+                               style="float: right;height: 10px;width:10px;margin: 15px;">
+                    <el-button type="text" icon="el-icon-setting" style="color:#f2f2f2;position: absolute;top: -15px;left: -8px;"></el-button>
                     <el-dropdown-menu slot="dropdown">
                       <el-dropdown-item>
                         <el-button
@@ -102,64 +103,40 @@
             <i class="el-icon-edit"></i>
             <span class="text">新建文章</span>
           </li>
-          <li class="item active">
-            <span class="text">2018-08-16</span>
-            <el-dropdown trigger="click" size="mini" style="float: right">
-              <el-button type="text" icon="el-icon-setting" style="color:#333"></el-button>
-              <el-dropdown-menu slot="dropdown">
-                <el-dropdown-item>
-                  <el-button
-                    type="text"
-                    style="color: #333">
-                    在新窗口打开
-                  </el-button>
-                </el-dropdown-item>
-                <el-dropdown-item>
-                  <el-button
-                    type="text"
-                    style="color: #333">
-                    设为私密
-                  </el-button>
-                </el-dropdown-item>
-                <el-dropdown-item>
-                  <el-button
-                    type="text"
-                    style="color: #333">
-                    删除文章
-                  </el-button>
-                </el-dropdown-item>
-              </el-dropdown-menu>
-            </el-dropdown>
-          </li>
-          <li class="item">
-            <span class="text">2018-08-17</span>
-            <el-dropdown trigger="click" size="mini" style="float: right">
-              <el-button type="text" icon="el-icon-setting" style="color:#333"></el-button>
-              <el-dropdown-menu slot="dropdown">
-                <el-dropdown-item>
-                  <el-button
-                    type="text"
-                    style="color: #333">
-                    在新窗口打开
-                  </el-button>
-                </el-dropdown-item>
-                <el-dropdown-item>
-                  <el-button
-                    type="text"
-                    style="color: #333">
-                    设为私密
-                  </el-button>
-                </el-dropdown-item>
-                <el-dropdown-item>
-                  <el-button
-                    type="text"
-                    style="color: #333">
-                    删除文章
-                  </el-button>
-                </el-dropdown-item>
-              </el-dropdown-menu>
-            </el-dropdown>
-          </li>
+          <draggable v-model="article.articles" @update="datadragEnd">
+            <template v-for="(c, index) in article.articles">
+              <li class="item" :class="{active:index==article.currentArticle.index}" @click="onArticleClick(index)">
+                <span class="text">{{c.name}}</span>
+                <el-dropdown v-if="index==article.currentArticle.index" trigger="click" size="mini"
+                             style="float: right;height: 10px;width: 10px;margin-top: 35px;">
+                  <el-button type="text" icon="el-icon-setting" style="color:#333;position:absolute;top: -15px;left: -8px"></el-button>
+                  <el-dropdown-menu slot="dropdown">
+                    <el-dropdown-item>
+                      <el-button
+                        type="text"
+                        style="color: #333">
+                        在新窗口打开
+                      </el-button>
+                    </el-dropdown-item>
+                    <el-dropdown-item>
+                      <el-button
+                        type="text"
+                        style="color: #333">
+                        设为私密
+                      </el-button>
+                    </el-dropdown-item>
+                    <el-dropdown-item>
+                      <el-button
+                        type="text"
+                        style="color: #333">
+                        删除文章
+                      </el-button>
+                    </el-dropdown-item>
+                  </el-dropdown-menu>
+                </el-dropdown>
+              </li>
+            </template>
+          </draggable>
           <li class="footer">
             <i class="el-icon-edit"></i>
             <span class="text">在下方新建文章</span>
@@ -178,7 +155,7 @@
           <input type="text" class="title" value="2018-08-16"/>
         </el-row>
         <el-row style="height: calc(100% - 64px);">
-            <mavonEditor v-model="article.content"/>
+          <mavonEditor v-model="article.content"/>
         </el-row>
       </div>
     </el-col>
@@ -231,7 +208,32 @@
           dialogFormVisible: false
         },
         article: {
-          content: ""
+          content: "```java\npublic class Java{\n  public static void main(String[] args) {\n    System.out.println(\"Hello World!\");\n  }\n}\n```",
+          articles: [
+            {
+              id: 1,
+              seq: 0,
+              name: "Hbase"
+            },
+            {
+              id: 2,
+              seq: 1,
+              name: "Hadoop"
+            },
+            {
+              id: 3,
+              seq: 2,
+              name: "Linux"
+            },
+            {
+              id: 4,
+              seq: 3,
+              name: "Spark"
+            }
+          ],
+          currentArticle: {
+            index: 0
+          },
         }
       }
     },
@@ -346,6 +348,10 @@
       loadArticleList(categoryId) {
 
       },
+      onArticleClick(index) {
+        let vm = this;
+        vm.article.currentArticle.index = index;
+      },
       datadragEnd(evt) {
         let vm = this;
         console.log('拖动前的索引 :' + evt.oldIndex);
@@ -380,7 +386,7 @@
   .category-list .item {
     font-size: 16px;
     color: #f2f2f2;
-    padding: 0 20px 0 15px;
+    padding: 0 10px 0 15px;
     position: relative;
     cursor: pointer;
     line-height: 40px;
@@ -406,7 +412,7 @@
     color: #f2f2f2;
     background-color: #666;
     border-left: 3px solid #ec7259;
-    padding: 0 20px 0 12px;
+    padding: 0 10px 0 12px;
   }
 
   .article-list {
