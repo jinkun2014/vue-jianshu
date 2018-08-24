@@ -62,7 +62,8 @@
                       <el-dropdown-item>
                         <el-button
                           type="text"
-                          style="color: #333"
+                          size="medium"
+                          style="color: #333;width:100%;text-align: left"
                           @click="onCategoryEdit(c.id,c.name)">
                           修改文集
                         </el-button>
@@ -70,7 +71,8 @@
                       <el-dropdown-item>
                         <el-button
                           type="text"
-                          style="color: #333"
+                          size="medium"
+                          style="color: #333;width:100%;text-align: left"
                           @click="onCategoryDel(c.id)">
                           删除文集
                         </el-button>
@@ -101,14 +103,14 @@
     <el-col :span="6" style="height: 100%;">
       <div style="background: #fff;height: 100%;overflow:auto;">
         <ul class="article-list">
-          <li class="header">
+          <li class="header" @click="onArticleAddClick(false)">
             <i class="el-icon-edit"></i>
             <span class="text">新建文章</span>
           </li>
           <draggable v-model="article.articles" @update="articleDragEnd">
             <template v-for="(a, index) in article.articles">
               <li class="item" :class="{active:a.id==article.currentArticle.id}" @click="onArticleClick(a.id)">
-                <span class="text" style="display: block;height: 60px;line-height: 60px">{{a.name}}</span>
+                <span class="text" style="display: block;height: 60px;line-height: 60px">{{a.title}}</span>
                 <el-dropdown v-if="a.id==article.currentArticle.id" trigger="click" size="mini"
                              style="float: right;height: 10px;width: 10px;margin-top: -25px;">
                   <el-button type="text" icon="el-icon-setting" style="color:#333;position:absolute;top: -15px;left: -8px"></el-button>
@@ -116,21 +118,24 @@
                     <el-dropdown-item>
                       <el-button
                         type="text"
-                        style="color: #333">
+                        size="medium"
+                        style="color: #333;width:100%;text-align: left">
                         在新窗口打开
                       </el-button>
                     </el-dropdown-item>
                     <el-dropdown-item>
                       <el-button
                         type="text"
-                        style="color: #333">
+                        size="medium"
+                        style="color: #333;width:100%;text-align: left">
                         设为私密
                       </el-button>
                     </el-dropdown-item>
                     <el-dropdown-item>
                       <el-button
                         type="text"
-                        style="color: #333"
+                        size="medium"
+                        style="color: #333;width:100%;text-align: left"
                         @click="onArticleDel(a.id)">
                         删除文章
                       </el-button>
@@ -144,7 +149,7 @@
               </li>
             </template>
           </draggable>
-          <li class="footer">
+          <li class="footer" @click="onArticleAddClick(true)">
             <i class="el-icon-edit"></i>
             <span class="text">在下方新建文章</span>
           </li>
@@ -154,16 +159,27 @@
 
     <!-- 文章内容 -->
     <el-col :span="14" style="height: 100%;overflow:hidden;">
-      <div style="background: #fff;height: 100%;border-left: 1px solid #ccc;">
+      <div v-if="article.currentArticle.id != 0" style="background: #fff;height: 100%;border-left: 1px solid #ccc;">
         <el-row>
-          <span style="height:20px;float: right;color:#999;">已保存</span>
+          <el-button type="text"
+                     style="float: right;margin-right: 10px;color:#666"
+                     size="medium"
+                     :loading="article.saving"
+                     disabled>
+            {{ article.saving?'保存中':'已保存' }}
+          </el-button>
         </el-row>
         <el-row>
-          <input type="text" class="title" value="2018-08-16"/>
+          <input type="text" class="title" v-model="article.currentArticle.title"/>
         </el-row>
         <el-row style="height: calc(100% - 64px);">
-          <mavonEditor v-model="article.content"/>
+          <mavonEditor
+            v-model="article.currentArticle.markdown"
+            :save="onArticleSave"/>
         </el-row>
+      </div>
+      <div v-if="article.currentArticle.id == 0" style="background: #fff;height: 100%;border-left: 1px solid #ccc;">
+        新建文章
       </div>
     </el-col>
   </el-row>
@@ -174,6 +190,11 @@
   import draggable from 'vuedraggable'
   // Markdown
   import mavonEditor from '../components/editor'
+  import * as util from '../assets/util'
+  // 分类
+  import * as category from '../api/category'
+  // 文章
+  import * as article from '../api/article'
 
   export default {
     components: {
@@ -188,59 +209,32 @@
             name: '',
           },
           categories: [
-            {
-              id: 1,
-              seq: 0,
-              name: "Hbase"
-            },
-            {
-              id: 2,
-              seq: 1,
-              name: "Hadoop"
-            },
-            {
-              id: 3,
-              seq: 2,
-              name: "Linux"
-            },
-            {
-              id: 4,
-              seq: 3,
-              name: "Spark"
-            }
+            // {
+            //   id: 4,
+            //   seq: 3,
+            //   name: "Spark"
+            // }
           ],
           currentCategory: {
-            id: 1,
+            id: 0,
           },
           editDialogShow: false
         },
         article: {
-          content: "```java\npublic class Java{\n  public static void main(String[] args) {\n    System.out.println(\"Hello World!\");\n  }\n}\n```",
           articles: [
-            {
-              id: 1,
-              seq: 0,
-              name: "2018-08-10"
-            },
-            {
-              id: 2,
-              seq: 1,
-              name: "2018-08-11"
-            },
-            {
-              id: 3,
-              seq: 2,
-              name: "2018-08-12"
-            },
-            {
-              id: 4,
-              seq: 3,
-              name: "2018-08-13"
-            }
+            // {
+            //   id: 1,
+            //   seq: 0,
+            //   name: "2018-08-10"
+            // },
           ],
           currentArticle: {
-            id: 1
+            id: 0,
+            title: "",
+            markdown: "",
+            html: ""
           },
+          saving: false
         }
       }
     },
@@ -260,8 +254,31 @@
           vm.category.form.name = "";
         }
       },
+      "category.currentCategory.id"() {
+        let vm = this;
+        if (vm.category.currentCategory.id) {
+          vm.loadArticleList(vm.category.currentCategory.id)
+        }
+      },
+      "article.currentArticle.id"() {
+        let vm = this;
+        if (vm.article.currentArticle.id) {
+          vm.loadArticle(vm.article.currentArticle.id)
+        }
+      },
     },
     methods: {
+      loadCategoryList() {
+        let vm = this;
+        category.list.r()
+          .then(data => {
+            vm.category.categories = data;
+            if (vm.category.categories.length > 0) {
+              vm.category.currentCategory.id = vm.category.categories[0].id
+            }
+          })
+          .catch(util.catchError);
+      },
       onCategoryClick(id) {
         console.log('当前选中 :' + id);
         let vm = this;
@@ -283,10 +300,9 @@
       onCategoryEditSubmit() {
         let vm = this;
         let params = {
-          "id": vm.category.form.id,
           "name": vm.category.form.name
         };
-        vm.saveCategory(params);
+        vm.updateCategory(vm.category.form.id, params);
       },
       onCategoryDel(id) {
         let vm = this;
@@ -295,10 +311,7 @@
           cancelButtonText: '取消',
           type: 'warning'
         }).then(() => {
-          let params = {
-            "id": id
-          };
-          vm.delCategory(params);
+          vm.delCategory(id);
         }).catch(() => {
           this.$message({
             type: 'info',
@@ -308,61 +321,114 @@
       },
       saveCategory(params) {
         let vm = this;
-
-        if (params.id) {
-          for (var i = 0; i < vm.category.categories.length; i++) {
-            if (vm.category.categories[i].id == params.id) {
-              vm.category.categories[i].name = params.name;
-            }
-          }
-
-          // 还原修改数据
-          vm.category.editDialogShow = false;
-        } else {
-          let categories = new Array();
-          let n = {id: new Date().getMilliseconds(), name: params.name, seq: 0};
-          categories.push(n);
-          for (var i = 0; i < vm.category.categories.length; i++) {
-            categories.push(vm.category.categories[i]);
-          }
-          vm.category.categories = categories;
-
-          // 隐藏编辑对话框
-          vm.category.show = false;
-
-          // 选中新增分类
-          vm.category.currentCategory.id = n.id;
-        }
+        category.save.r(params)
+          .then(data => {
+            vm.category.categories.unshift(data);
+            // 隐藏编辑对话框
+            vm.category.show = false;
+            // 选中新增分类
+            vm.category.currentCategory.id = data.id;
+          })
+          .catch(util.catchError)
       },
-      delCategory(params) {
+      updateCategory(id, params) {
         let vm = this;
 
-        if (params.id) {
-          let categories = new Array();
-          for (var i = 0; i < vm.category.categories.length; i++) {
-            if (params.id != vm.category.categories[i].id) {
-              categories.push(vm.category.categories[i]);
+        category.update.r(id, params)
+          .then(data => {
+            for (var i = 0; i < vm.category.categories.length; i++) {
+              if (vm.category.currentCategory.id == vm.category.categories[i].id) {
+                vm.category.categories[i].name = params.name;
+              }
             }
-          }
-          vm.category.categories = categories;
 
-          // 还原新增数据
-          vm.category.show = false;
+            // 隐藏对话框
+            vm.category.editDialogShow = false;
+          })
+          .catch(util.catchError)
+      },
+      delCategory(id) {
+        let vm = this;
+        if (id) {
+          category.del.r(id)
+            .then(data => {
+              let categories = new Array();
+              for (var i = 0; i < vm.category.categories.length; i++) {
+                if (id != vm.category.categories[i].id) {
+                  categories.push(vm.category.categories[i]);
+                }
+              }
+              vm.category.categories = categories;
+              if (categories && categories.length > 0) {
+                vm.category.currentCategory.id = categories[0].id;
+              } else {
+                vm.category.currentCategory.id = 0;
+              }
 
-          this.$message({
-            type: 'success',
-            message: '删除成功!'
-          });
+              this.$message({
+                type: 'success',
+                message: '删除成功!'
+              });
+            })
+            .catch(util.catchError)
         }
       },
       categoryDragEnd(evt) {
         let vm = this;
+        var params = new Array();
         for (var i = 0; i < vm.category.categories.length; i++) {
-          console.log('拖动后的分类 :' + vm.category.categories[i].name);
+          params.push({id: vm.category.categories[i].id, seq: i})
         }
+        console.log('拖动后的分类 :' + params);
+        category.seq.r(params)
+          .then(data=>{
+
+          })
+          .catch(util.catchError)
       },
       loadArticleList(categoryId) {
+        let vm = this;
+        article.list.r(categoryId)
+          .then(data => {
+            vm.article.articles = data;
+            if (vm.article.articles && vm.article.articles.length > 0) {
+              vm.article.currentArticle.id = vm.article.articles[0].id
+            } else {
+              vm.article.currentArticle.id = 0
+            }
+          })
+          .catch(util.catchError)
+      },
+      loadArticle(id) {
+        let vm = this;
+        article.get.r(id)
+          .then(data => {
+            if (data) {
+              vm.article.currentArticle = data;
+            }
+          })
+          .catch(util.catchError)
+      },
+      onArticleAddClick(atBottom) {
+        let vm = this;
+        var params = {
+          categoryId: vm.category.currentCategory.id,
+          title: new Date().toLocaleDateString().replace('\/', '-').replace('\/', '-'),
+          atBottom: atBottom
+        };
+        vm.article.saving = true;
+        article.save.r(params)
+          .then(data => {
+            if (atBottom) {
+              vm.article.articles.push(data)
+            } else {
+              vm.article.articles.unshift(data)
+            }
+            vm.article.currentArticle.id = data.id;
 
+            vm.article.saving = false;
+          })
+          .catch(util.catchError)
       },
       onArticleClick(id) {
         let vm = this;
@@ -375,34 +441,37 @@
           cancelButtonText: '取消',
           type: 'warning'
         }).then(() => {
-          let params = {
-            "id": id
-          };
-          vm.delArticle(params);
+          vm.delArticle(id);
         }).catch(() => {
-          this.$message({
+          vm.$message({
             type: 'info',
             message: '已取消删除'
           });
         });
       },
-      delArticle(params) {
+      delArticle(id) {
         let vm = this;
-
-        if (params.id) {
-          let articles = new Array();
-          for (var i = 0; i < vm.article.articles.length; i++) {
-            if (params.id != vm.article.articles[i].id) {
-              articles.push(vm.article.articles[i]);
+        article.del.r(id)
+          .then(data => {
+            let articles = new Array();
+            for (var i = 0; i < vm.article.articles.length; i++) {
+              if (id != vm.article.articles[i].id) {
+                articles.push(vm.article.articles[i]);
+              }
             }
-          }
-          vm.article.articles = articles;
+            vm.article.articles = articles;
+            if (vm.article.articles && vm.article.articles.length > 0) {
+              vm.article.currentArticle.id = vm.article.articles[0].id
+            } else {
+              vm.article.currentArticle.id = 0;
+            }
 
-          this.$message({
-            type: 'success',
-            message: '删除成功!'
-          });
-        }
+            this.$message({
+              type: 'success',
+              message: '删除成功!'
+            });
+          })
+          .catch(util.catchError)
       },
       articleDragEnd(evt) {
         let vm = this;
@@ -410,6 +479,29 @@
           console.log('拖动后的分类 :' + vm.article.articles[i].name);
         }
       },
+      onArticleSave(value, render) {
+        let vm = this;
+        let params = {
+          title: vm.article.currentArticle.title,
+          markdown: value,
+          html: render
+        }
+        vm.article.saving = true;
+        article.update.r(vm.article.currentArticle.id, params)
+          .then(data => {
+            vm.article.currentArticle = data;
+            for (var i = 0; i < vm.article.articles.length; i++) {
+              if (data.id == vm.article.articles[i].id) {
+                vm.article.articles[i].title = data.title;
+              }
+            }
+            vm.article.saving = false;
+          })
+          .catch(util.catchError)
+      }
+    },
+    created() {
+      this.loadCategoryList();
     }
   }
 </script>
@@ -429,7 +521,7 @@
   }
 
   .category-list .item {
-    font-size: 16px;
+    font-size: 15px;
     color: #f2f2f2;
     padding: 0 10px 0 15px;
     position: relative;

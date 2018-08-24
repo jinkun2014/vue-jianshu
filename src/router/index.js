@@ -8,7 +8,7 @@ export default new Router({
     {
       path: '/',
       name: '首页',
-      component: (resolve) => require(['../views/index.vue'], resolve)
+      component: (resolve) => require(['../views/write.vue'], resolve)
     }
   ]
 })

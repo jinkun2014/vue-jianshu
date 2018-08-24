@@ -8,6 +8,7 @@
       :scrollStyle="false"
       codeStyle="github"
       @fullScreen="$fullScreen"
+      @save="save"
       style="height: 100%"/>
   </div>
 </template>
@@ -22,7 +23,10 @@
       mavonEditor
       // or 'mavon-editor': mavonEditor
     },
-    props:['value'],
+    props:{
+      value:{},
+      save: {}
+    },
     data() {
       return {
         defaultOpen: "edit",
