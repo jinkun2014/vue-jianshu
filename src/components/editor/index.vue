@@ -1,6 +1,7 @@
 <template>
   <div id="editor">
     <mavon-editor
+      ref="md"
       :value="value"
       :toolbars="toolbars"
       :subfield="true"
@@ -9,6 +10,9 @@
       codeStyle="github"
       @fullScreen="$fullScreen"
       @save="save"
+      @change="change"
+      @imgAdd="imgAdd"
+      @imgDel="imgDel"
       style="height: 100%"/>
   </div>
 </template>
@@ -18,14 +22,16 @@
   import 'mavon-editor/dist/css/index.css'
 
   export default {
-    name: 'editor',
     components: {
       mavonEditor
       // or 'mavon-editor': mavonEditor
     },
-    props:{
-      value:{},
-      save: {}
+    props: {
+      value: {},
+      save: {},
+      change: {},
+      imgAdd: {},
+      imgDel: {}
     },
     data() {
       return {
@@ -70,6 +76,9 @@
     methods: {
       $fullScreen(status, value) {
         this.defaultOpen = status ? 'preview' : 'edit';
+      },
+      $img2Url(pos, url) {
+        this.$refs.md.$img2Url(pos, url);
       }
     }
   }
