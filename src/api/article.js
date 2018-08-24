@@ -51,10 +51,19 @@ const get = {
   }
 }
 
+//更新
+const seq = {
+  p: ['post,' + preUrlPath + '/seq'],//暂时没用留作权限控制使用
+  r: (params) => {
+    return instance.post(preUrlPath + '/seq', params);
+  }
+}
+
 export {
   save,
   update,
   del,
   list,
-  get
+  get,
+  seq
 }

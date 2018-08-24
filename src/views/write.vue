@@ -101,7 +101,8 @@
 
     <!-- 文章列表 -->
     <el-col :span="6" style="height: 100%;">
-      <div style="background: #fff;height: 100%;overflow:auto;">
+      <div style="background: #fff;height: 100%;overflow:auto;"
+           v-loading="article.articleLoading">
         <ul class="article-list">
           <li class="header" @click="onArticleAddClick(false)">
             <i class="el-icon-edit"></i>
@@ -159,7 +160,9 @@
 
     <!-- 文章内容 -->
     <el-col :span="14" style="height: 100%;overflow:hidden;">
-      <div v-if="article.currentArticle.id != 0" style="background: #fff;height: 100%;border-left: 1px solid #ccc;">
+      <div style="background: #fff;height: 100%;border-left: 1px solid #ccc;"
+           v-if="article.currentArticle.id != 0"
+           v-loading="article.contentLoading">
         <el-row>
           <el-button type="text"
                      style="float: right;margin-right: 10px;color:#666"
@@ -221,6 +224,8 @@
           editDialogShow: false
         },
         article: {
+          articleLoading: false,
+          contentLoading: false,
           articles: [
             // {
             //   id: 1,
@@ -381,13 +386,14 @@
         }
         console.log('拖动后的分类 :' + params);
         category.seq.r(params)
-          .then(data=>{
+          .then(data => {
 
           })
           .catch(util.catchError)
       },
       loadArticleList(categoryId) {
         let vm = this;
+        vm.article.articleLoading = true;
         article.list.r(categoryId)
           .then(data => {
             vm.article.articles = data;
@@ -396,15 +402,18 @@
             } else {
               vm.article.currentArticle.id = 0
             }
+            vm.article.articleLoading = false;
           })
           .catch(util.catchError)
       },
       loadArticle(id) {
         let vm = this;
+        vm.article.contentLoading = true;
         article.get.r(id)
           .then(data => {
             if (data) {
               vm.article.currentArticle = data;
+              vm.article.contentLoading = false;
             }
           })
           .catch(util.catchError)
@@ -416,6 +425,7 @@
           title: new Date().toLocaleDateString().replace('\/', '-').replace('\/', '-'),
           atBottom: atBottom
         };
+        vm.article.articleLoading = true;
         vm.article.saving = true;
         article.save.r(params)
           .then(data => {
@@ -427,6 +437,7 @@
             vm.article.currentArticle.id = data.id;
 
             vm.article.saving = false;
+            vm.article.articleLoading = false;
           })
           .catch(util.catchError)
       },
@@ -451,6 +462,7 @@
       },
       delArticle(id) {
         let vm = this;
+        vm.article.articleLoading = true;
         article.del.r(id)
           .then(data => {
             let articles = new Array();
@@ -466,18 +478,22 @@
               vm.article.currentArticle.id = 0;
             }
 
-            this.$message({
-              type: 'success',
-              message: '删除成功!'
-            });
+            vm.article.articleLoading = false;
           })
           .catch(util.catchError)
       },
       articleDragEnd(evt) {
         let vm = this;
+        var params = new Array();
         for (var i = 0; i < vm.article.articles.length; i++) {
-          console.log('拖动后的分类 :' + vm.article.articles[i].name);
+          params.push({id: vm.article.articles[i].id, seq: i})
         }
+        console.log('拖动后的分类 :' + params);
+        article.seq.r(params)
+          .then(data => {
+
+          })
+          .catch(util.catchError)
       },
       onArticleSave(value, render) {
         let vm = this;
