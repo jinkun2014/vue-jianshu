@@ -59,11 +59,20 @@ const seq = {
   }
 }
 
+//发布
+const publish = {
+  p: ['post,' + preUrlPath + '/{id}/publish/{status}'],//暂时没用留作权限控制使用
+  r: (id, status, params) => {
+    return instance.put(preUrlPath + '/' + id + '/publish/' + status, params);
+  }
+}
+
 export {
   save,
   update,
   del,
   list,
   get,
-  seq
+  seq,
+  publish
 }

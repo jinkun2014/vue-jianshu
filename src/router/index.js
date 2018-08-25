@@ -8,7 +8,19 @@ export default new Router({
     {
       path: '/',
       name: '首页',
-      component: (resolve) => require(['../views/write.vue'], resolve)
+      component: (resolve) => require(['../views/index.vue'], resolve),
+      children: [
+        {
+          path: '/write',
+          name: '写文章',
+          component: (resolve) => require(['../views/write/write.vue'], resolve),
+        }
+      ]
+    },
+    {
+      path: '/login',
+      name: '登录',
+      component: (resolve) => require(['../views/login/login.vue'], resolve),
     }
   ]
 })

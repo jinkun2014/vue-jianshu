@@ -2,7 +2,8 @@
   <el-row style="height: 100%;">
     <!-- 文集列表 -->
     <el-col :span="4" style="height: 100%;">
-      <div style="background: #404040;height: 100%;overflow:auto;">
+      <div style="background: #404040;height: 100%;overflow:auto;"
+           v-loading="category.listLoading">
         <!-- 回到首页 -->
         <div style="padding: 30px 18px 5px;text-align: center;z-index: 1000;">
           <el-button round style="padding: 12px 75px;color:#ec7259;background: transparent;border: 1px solid #ec7259;">回首页</el-button>
@@ -13,14 +14,14 @@
             type="text"
             icon="el-icon-edit"
             style="color:#fff;width: 90%;text-align: left"
-            @click="category.show = !category.show">
+            @click="category.addDialogShow = !category.addDialogShow">
             新建文集
           </el-button>
         </div>
         <!-- 新建文集表单 -->
         <div style="padding: 0 15px;">
           <el-collapse-transition>
-            <div v-if="category.show">
+            <div v-if="category.addDialogShow">
               <input
                 v-focus
                 type="text"
@@ -38,7 +39,7 @@
                 type="text"
                 size="mini"
                 style="color:#ccc"
-                @click="category.show = false">
+                @click="category.addDialogShow = false">
                 取消
               </el-button>
               <div style="height: 10px;"></div>
@@ -102,7 +103,7 @@
     <!-- 文章列表 -->
     <el-col :span="6" style="height: 100%;">
       <div style="background: #fff;height: 100%;overflow:auto;"
-           v-loading="article.articleLoading">
+           v-loading="article.listLoading">
         <ul class="article-list">
           <li class="header" @click="onArticleAddClick(false)">
             <i class="el-icon-edit"></i>
@@ -128,7 +129,17 @@
                       <el-button
                         type="text"
                         size="medium"
-                        style="color: #333;width:100%;text-align: left">
+                        style="color: #333;width:100%;text-align: left"
+                        @click="onArticlePublish(1)">
+                        发布文章
+                      </el-button>
+                    </el-dropdown-item>
+                    <el-dropdown-item>
+                      <el-button
+                        type="text"
+                        size="medium"
+                        style="color: #333;width:100%;text-align: left"
+                        @click="onArticlePublish(0)">
                         设为私密
                       </el-button>
                     </el-dropdown-item>
@@ -144,8 +155,7 @@
                   </el-dropdown-menu>
                 </el-dropdown>
                 <div style="display: block;line-height: 20px;font-size: 12px">
-                  <span>5 条评论</span>
-                  <span>1.5亿 次浏览</span>
+                  <span>{{a.status==0?'草稿':'已发布'}}</span>
                 </div>
               </li>
             </template>
@@ -176,19 +186,13 @@
           <input type="text" class="title" v-model="article.currentArticle.title"/>
         </el-row>
         <el-row style="height: calc(100% - 64px);">
-          <mavon-editor
+          <mdeditor
             ref="editor"
             v-model="article.currentArticle.markdown"
-            :toolbars="editor.toolbars"
-            :subfield="true"
-            :defaultOpen="editor.defaultOpen"
-            :scrollStyle="false"
-            codeStyle="github"
-            @fullScreen="$fullScreen"
-            @save="onArticleSave"
-            @change="onArticleChange"
-            @imgAdd="imgAdd"
-            @imgDel="imgDel"
+            :save="onArticleSave"
+            :change="onArticleChange"
+            :imgAdd="imgAdd"
+            :imgDel="imgDel"
             style="height: 100%"/>
         </el-row>
       </div>
@@ -204,24 +208,24 @@
   import draggable from 'vuedraggable'
   // Markdown
   // Local Registration
-  import {mavonEditor} from 'mavon-editor'
-  import 'mavon-editor/dist/css/index.css'
+  import mdeditor from '../../components/mdeditor/index'
 
-  import * as util from '../assets/util'
+  import * as util from '../../assets/util'
   // 分类
-  import * as category from '../api/category'
+  import * as category from '../../api/category'
   // 文章
-  import * as article from '../api/article'
+  import * as article from '../../api/article'
 
   export default {
     components: {
       draggable,
-      mavonEditor
+      mdeditor
     },
     data() {
       return {
         category: {
-          show: false,
+          listLoading: false,
+          addDialogShow: false,
           form: {
             name: '',
           },
@@ -238,13 +242,14 @@
           editDialogShow: false
         },
         article: {
-          articleLoading: false,
+          listLoading: false,
           contentLoading: false,
           articles: [
             // {
             //   id: 1,
             //   seq: 0,
             //   name: "2018-08-10"
+            //   status:0
             // },
           ],
           currentArticle: {
@@ -253,61 +258,22 @@
             markdown: "",
             html: ""
           },
-          saving: false
+          saving: false,
+          timeoutSaveId: false
         },
-        editor:{
-          defaultOpen: "edit",
-          toolbars: {
-            bold: true, // 粗体
-            italic: true, // 斜体
-            header: false, // 标题
-            underline: false, // 下划线
-            strikethrough: false, // 中划线
-            mark: false, // 标记
-            superscript: false, // 上角标
-            subscript: false, // 下角标
-            quote: false, // 引用
-            ol: false, // 有序列表
-            ul: false, // 无序列表
-            link: false, // 链接
-            imagelink: true, // 图片链接
-            code: true, // code
-            table: false, // 表格
-            fullscreen: true, // 全屏编辑
-            readmodel: false, // 沉浸式阅读
-            htmlcode: false, // 展示html源码
-            help: false, // 帮助
-            /* 1.3.5 */
-            undo: false, // 上一步
-            redo: false, // 下一步
-            trash: false, // 清空
-            save: true, // 保存（触发events中的save事件）
-            /* 1.4.2 */
-            navigation: false, // 导航目录
-            /* 2.1.8 */
-            alignleft: false, // 左对齐
-            aligncenter: false, // 居中
-            alignright: false, // 右对齐
-            /* 2.2.1 */
-            subfield: false, // 单双栏模式
-            preview: false, // 预览
-          }
-        }
       }
     },
     watch: {
       // 深度监听
-      "category.show"() {
+      "category.addDialogShow"() {
         let vm = this;
-        if (!vm.category.show) {
-          vm.category.form.id = null;
+        if (!vm.category.addDialogShow) {
           vm.category.form.name = "";
         }
       },
       "category.editDialogShow"() {
         let vm = this;
         if (!vm.category.editDialogShow) {
-          vm.category.form.id = null;
           vm.category.form.name = "";
         }
       },
@@ -319,27 +285,35 @@
       },
       "article.currentArticle.id"() {
         let vm = this;
-        if (vm.article.currentArticle.id) {
+        if (vm.article.currentArticle.id != 0) {
           vm.loadArticle(vm.article.currentArticle.id)
         }
       },
     },
+    computed: {
+      saving() {
+        if (this.isBtnLoading) {
+          return '保存中...';
+        }
+        return '已保存';
+      }
+    },
     methods: {
       loadCategoryList() {
         let vm = this;
+        vm.category.listLoading = true;
         category.list.r()
           .then(data => {
             vm.category.categories = data;
             if (vm.category.categories.length > 0) {
               vm.category.currentCategory.id = vm.category.categories[0].id
             }
+            vm.category.listLoading = false;
           })
           .catch(util.catchError);
       },
       onCategoryClick(id) {
-        console.log('当前选中 :' + id);
-        let vm = this;
-        vm.category.currentCategory.id = id;
+        this.category.currentCategory.id = id;
       },
       onCategoryAddSubmit() {
         let vm = this;
@@ -382,7 +356,7 @@
           .then(data => {
             vm.category.categories.unshift(data);
             // 隐藏编辑对话框
-            vm.category.show = false;
+            vm.category.addDialogShow = false;
             // 选中新增分类
             vm.category.currentCategory.id = data.id;
           })
@@ -445,27 +419,29 @@
       },
       loadArticleList(categoryId) {
         let vm = this;
-        vm.article.articleLoading = true;
+        vm.article.listLoading = true;
         article.list.r(categoryId)
           .then(data => {
             vm.article.articles = data;
-            if (vm.article.articles && vm.article.articles.length > 0) {
+            if (vm.article.articles.length > 0) {
               vm.article.currentArticle.id = vm.article.articles[0].id
             } else {
               vm.article.currentArticle.id = 0
             }
-            vm.article.articleLoading = false;
+            vm.article.listLoading = false;
           })
           .catch(util.catchError)
       },
       loadArticle(id) {
         let vm = this;
+        vm.article.listLoading = true;
         vm.article.contentLoading = true;
         article.get.r(id)
           .then(data => {
             if (data) {
               vm.article.currentArticle = data;
               vm.article.contentLoading = false;
+              vm.article.listLoading = false;
             }
           })
           .catch(util.catchError)
@@ -477,7 +453,7 @@
           title: new Date().toLocaleDateString().replace('\/', '-').replace('\/', '-'),
           atBottom: atBottom
         };
-        vm.article.articleLoading = true;
+        vm.article.listLoading = true;
         vm.article.saving = true;
         article.save.r(params)
           .then(data => {
@@ -489,7 +465,7 @@
             vm.article.currentArticle.id = data.id;
 
             vm.article.saving = false;
-            vm.article.articleLoading = false;
+            vm.article.listLoading = false;
           })
           .catch(util.catchError)
       },
@@ -514,7 +490,7 @@
       },
       delArticle(id) {
         let vm = this;
-        vm.article.articleLoading = true;
+        vm.article.listLoading = true;
         article.del.r(id)
           .then(data => {
             let articles = new Array();
@@ -530,7 +506,7 @@
               vm.article.currentArticle.id = 0;
             }
 
-            vm.article.articleLoading = false;
+            vm.article.listLoading = false;
           })
           .catch(util.catchError)
       },
@@ -546,9 +522,6 @@
 
           })
           .catch(util.catchError)
-      },
-      $fullScreen(status, value) {
-        this.editor.defaultOpen = status ? 'preview' : 'edit';
       },
       onArticleSave(value, render) {
         let vm = this;
@@ -570,8 +543,28 @@
           })
           .catch(util.catchError)
       },
+      onArticlePublish(status) {
+        let vm = this;
+        article.publish.r(vm.article.currentArticle.id, status)
+          .then(data => {
+            vm.article.currentArticle.status = status;
+            for (var i = 0; i < vm.article.articles.length; i++) {
+              if (vm.article.currentArticle.id == vm.article.articles[i].id) {
+                vm.article.articles[i].status = status;
+              }
+            }
+            vm.$message({
+              type: 'info',
+              message: '操作成功'
+            });
+          })
+      },
       onArticleChange(value, render) {
-
+        // let vm = this;
+        // window.clearTimeout(vm.article.timeoutSaveId);
+        // vm.article.timeoutSaveId = window.setTimeout(function () {
+        //   vm.onArticleSave(value, render)
+        // }, 2000);
       },
       imgAdd(pos, $file) {
         let vm = this;
@@ -591,7 +584,7 @@
         vm.$refs.editor.$img2Url(pos, new Date().toLocaleTimeString());
       },
       imgDel(pos, $file) {
-        console.info(pos+"-"+$file)
+        console.info(pos + "-" + $file)
       },
     },
     created() {
@@ -600,228 +593,6 @@
   }
 </script>
 
-<style scoped>
-  .category-list {
-    height: 100%;
-    list-style: none;
-    position: relative;
-    margin: 0;
-    padding-left: 0;
-    background-color: transparent;
-  }
-
-  .category-list li {
-    list-style: none;
-  }
-
-  .category-list .item {
-    font-size: 15px;
-    color: #f2f2f2;
-    padding: 0 10px 0 15px;
-    position: relative;
-    cursor: pointer;
-    line-height: 40px;
-    list-style: none;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-    -webkit-transition: padding .2s;
-    -o-transition: padding .2s;
-    transition: padding .2s;
-  }
-
-  .category-list .item:hover {
-    background-color: #666;
-  }
-
-  .category-list .item .text {
-    width: 100%;
-    overflow: hidden;
-    -o-text-overflow: ellipsis;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .category-list .item.active {
-    color: #f2f2f2;
-    background-color: #666;
-    border-left: 3px solid #ec7259;
-    padding: 0 10px 0 12px;
-  }
-
-  .article-list {
-    height: 100%;
-    position: relative;
-    margin: 0;
-    padding-left: 0;
-    background-color: transparent;
-    list-style: none;
-  }
-
-  .article-list li {
-    list-style: none;
-  }
-
-  .article-list .header {
-    font-size: 16px;
-    color: #595959;
-    padding: 0 25px 0 20px;
-    position: relative;
-    cursor: pointer;
-    border-bottom: 1px solid #ccc;
-    line-height: 65px;
-    list-style: none;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-    -webkit-transition: padding .2s;
-    -o-transition: padding .2s;
-    transition: padding .2s;
-  }
-
-  .article-list .header:hover {
-    color: #000;
-  }
-
-  .article-list .item {
-    font-size: 20px;
-    color: #595959;
-    padding: 0 25px 0 20px;
-    position: relative;
-    cursor: pointer;
-    border-bottom: 1px solid #ccc;
-    line-height: 80px;
-    list-style: none;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-    -webkit-transition: padding .2s;
-    -o-transition: padding .2s;
-    transition: padding .2s;
-  }
-
-  .article-list .item:hover {
-    background-color: #e6e6e6;
-  }
-
-  .article-list .item .text {
-    color: #333;
-    width: 90%;
-    overflow: hidden;
-    -o-text-overflow: ellipsis;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .article-list .item.active {
-    background-color: #e6e6e6;
-    border-left: 5px solid #ec7259;
-    padding: 0 25px 0 15px;
-  }
-
-  .article-list .footer {
-    font-size: 16px;
-    color: #999;
-    padding: 10px 25px 0 20px;
-    position: relative;
-    cursor: pointer;
-    line-height: 40px;
-    list-style: none;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-    -webkit-transition: padding .2s;
-    -o-transition: padding .2s;
-    transition: padding .2s;
-  }
-
-  .article-list .footer:hover {
-    color: #333;
-  }
-
-  .title {
-    width: 90%;
-    padding: 0 80px 10px 30px;
-    margin-bottom: 0;
-    border: none;
-    font-size: 30px;
-    font-weight: 400;
-    line-height: 30px;
-    -webkit-box-shadow: none;
-    box-shadow: none;
-    color: #595959;
-    background-color: transparent;
-    outline: none;
-    border-radius: 0;
-    overflow: hidden;
-    -o-text-overflow: ellipsis;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-</style>
-
-<style>
-  #editor {
-    height: 100%;
-  }
-
-  /*设置编辑器的z-index*/
-  .v-note-wrapper {
-    z-index: 100;
-  }
-
-  /*去掉编辑器阴影*/
-  .v-note-wrapper .v-note-op {
-    box-shadow: none !important;
-    border: 1px solid #dcdfe6 !important;
-  }
-
-  /*去掉编辑器阴影*/
-  .v-note-wrapper .v-note-op .op-icon-divider {
-    display: none !important;
-  }
-
-  /*去掉编辑器阴影*/
-  .v-note-wrapper .v-note-panel {
-    box-shadow: none !important;
-    border: 1px solid #dcdfe6 !important;
-    border-top: none !important;
-  }
-
-  /*解决图片过大预览无删除按钮的bug*/
-  .v-note-img-wrapper img {
-    max-width: 90%;
-  }
-
-  /*调整代码字体大小*/
-  .markdown-body .hljs {
-    font-size: 115% !important;
-  }
-
-  .markdown-body strong {
-    font-weight: bolder
-  }
-
-  .markdown-body .highlight pre, .markdown-body pre {
-    padding: 14px;
-    font-size: 95%;
-  }
-
-  .markdown-body table {
-    display: table !important;
-  }
-
-  .markdown-body img {
-    display: block;
-    margin: 0 auto;
-  }
-
-  .hljs {
-    padding: 0;
-  }
+<style rel="stylesheet/scss" lang="scss" scoped>
+  @import "./write";
 </style>

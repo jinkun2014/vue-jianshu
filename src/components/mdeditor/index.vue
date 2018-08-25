@@ -1,20 +1,18 @@
 <template>
-  <div id="editor">
-    <mavon-editor
-      ref="md"
-      :value="value"
-      :toolbars="toolbars"
-      :subfield="true"
-      :defaultOpen="defaultOpen"
-      :scrollStyle="false"
-      codeStyle="github"
-      @fullScreen="$fullScreen"
-      @save="save"
-      @change="change"
-      @imgAdd="imgAdd"
-      @imgDel="imgDel"
-      style="height: 100%"/>
-  </div>
+  <mavon-editor
+    ref="md"
+    :value="value"
+    :toolbars="toolbars"
+    :subfield="true"
+    :defaultOpen="defaultOpen"
+    :scrollStyle="false"
+    codeStyle="github"
+    @fullScreen="$fullScreen"
+    @save="save"
+    @change="change"
+    @imgAdd="imgAdd"
+    @imgDel="imgDel"
+    style="height: 100%"/>
 </template>
 <script>
   // Local Registration
@@ -22,6 +20,7 @@
   import 'mavon-editor/dist/css/index.css'
 
   export default {
+    name: "mdeditor",
     components: {
       mavonEditor
       // or 'mavon-editor': mavonEditor
@@ -84,9 +83,6 @@
   }
 </script>
 <style>
-  #editor {
-    height: 100%;
-  }
 
   /*设置编辑器的z-index*/
   .v-note-wrapper {
