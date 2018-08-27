@@ -120,9 +120,23 @@ export const dateFormat = function (source, ignore_minute) {
 };
 //ajax错误处理
 export const catchError = function (error) {
-  Vue.prototype.$message({
-    message: error.message || '服务端异常，请联系技术支持',
-    type: 'error'
-  });
+  switch (error.resultCode) {
+    case "60000":
+      sessionStorage.clear();
+      Vue.prototype.$alert("未登录或登录超时", '提示', {
+        confirmButtonText: '重新登录',
+        callback: action => {
+          //跳转到登录页
+          location.reload();
+        }
+      });
+      break;
+    default:
+      Vue.prototype.$message({
+        message: error.message || '请求异常',
+        type: 'error'
+      });
+      break;
+  }
   return Promise.reject(error);
 };

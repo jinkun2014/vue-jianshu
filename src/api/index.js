@@ -1,16 +1,17 @@
 import axios from 'axios';
-import * as util from '../assets/util.js';
 
 // onLine
 // const instance = axios.create({
 //   baseURL: '',
-//   timeout: 10000
+//   timeout: 10000,
+//   withCredentials: true // 运行跨域带上cookies
 // });
 
 //local
 const instance = axios.create({
   baseURL: 'http://127.0.0.1:8085',
-  timeout: 10000
+  timeout: 10000,
+  withCredentials: true // 运行跨域带上cookies
 });
 
 //设置请求头
@@ -18,7 +19,7 @@ instance.defaults.headers = {
   'Content-Type': 'application/json'
 };
 
-//错误处理
+//数据处理
 /*
 ==========
 {
@@ -42,8 +43,6 @@ instance.interceptors.response.use(
     err.message = data.message;
     err.resultCode = data.resultCode;
     throw err;
-
-    return resp;
   },
   err => {
     //这里是返回状态码不为200时候的错误处理

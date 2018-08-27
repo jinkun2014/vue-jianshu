@@ -32,6 +32,7 @@
       }
     },
     created() {
+      this.login();
     }
   }
 </script>
