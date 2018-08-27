@@ -184,6 +184,7 @@
         </el-row>
         <el-row>
           <input type="text" class="title" v-model="article.currentArticle.title"/>
+          <input type="text" class="tag" placeholder="标签1,标签2" v-model="article.currentArticle.tags"/>
         </el-row>
         <el-row style="height: calc(100% - 64px);">
           <mdeditor
@@ -256,7 +257,8 @@
             id: 0,
             title: "",
             markdown: "",
-            html: ""
+            html: "",
+            tags: ""
           },
           saving: false,
           timeoutSaveId: false
@@ -525,10 +527,23 @@
       },
       onArticleSave(value, render) {
         let vm = this;
+
+        let digest = '';
+        if (render) {
+          let el = document.createElement('div');
+          el.innerHTML = render;
+          let b = el.getElementsByTagName('blockquote')
+          if (b && b.length > 0) {
+            digest = b[0].innerHTML;
+          }
+        }
+
         let params = {
           title: vm.article.currentArticle.title,
           markdown: value,
-          html: render
+          html: render,
+          digest: digest,
+          tags:vm.article.currentArticle.tags
         }
         vm.article.saving = true;
         article.update.r(vm.article.currentArticle.id, params)
@@ -540,6 +555,12 @@
               }
             }
             vm.article.saving = false;
+
+            this.$message({
+              type: 'info',
+              message: '保存成功！',
+              duration:500
+            });
           })
           .catch(util.catchError)
       },

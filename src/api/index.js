@@ -7,7 +7,7 @@ import * as util from '../assets/util.js';
 //   timeout: 10000
 // });
 
-local
+//local
 const instance = axios.create({
   baseURL: 'http://127.0.0.1:8085',
   timeout: 10000
