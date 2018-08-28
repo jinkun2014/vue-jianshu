@@ -148,6 +148,15 @@
                         type="text"
                         size="medium"
                         style="color: #333;width:100%;text-align: left"
+                        @click="onArticleComment(article.currentArticle.comment!=0?0:1)">
+                        {{article.currentArticle.comment!=0?'展示评论':'关闭评论'}}
+                      </el-button>
+                    </el-dropdown-item>
+                    <el-dropdown-item>
+                      <el-button
+                        type="text"
+                        size="medium"
+                        style="color: #333;width:100%;text-align: left"
                         @click="onArticleDel(a.id)">
                         删除文章
                       </el-button>
@@ -155,7 +164,8 @@
                   </el-dropdown-menu>
                 </el-dropdown>
                 <div style="display: block;line-height: 20px;font-size: 12px">
-                  <span>{{a.status==0?'草稿':'已发布'}}</span>
+                  <span>{{a.status==0?'草稿&nbsp;&nbsp;&nbsp;&nbsp;':'已发布'}}</span>
+                  <span style="margin-left: 10px">{{a.comment==0?'评论已展示':'评论已关闭'}}</span>
                 </div>
               </li>
             </template>
@@ -174,13 +184,7 @@
            v-if="article.currentArticle.id != 0"
            v-loading="article.contentLoading">
         <el-row>
-          <el-button type="text"
-                     style="float: right;margin-right: 10px;color:#666"
-                     size="medium"
-                     :loading="article.saving"
-                     disabled>
-            {{ article.saving?'保存中':'已保存' }}
-          </el-button>
+          <span style="float: right;margin:5px 10px 0 0;color:#666;" :loading="article.saving">{{ article.saving?'保存中...':'已保存' }}</span>
         </el-row>
         <el-row>
           <input type="text" class="title" v-model="article.currentArticle.title"/>
@@ -197,8 +201,11 @@
             style="height: 100%"/>
         </el-row>
       </div>
-      <div v-if="article.currentArticle.id == 0" style="background: #fff;height: 100%;border-left: 1px solid #ccc;">
-        新建文章
+      <div v-if="article.currentArticle.id == 0"
+           style="background: #fff;height: 100%;border-left: 1px solid #ccc;position: relative;">
+        <div style="position: absolute;text-align: center;top: calc(50% - 21px);left: 0;right: 0;">
+          新建文章
+        </div>
       </div>
     </el-col>
   </el-row>
@@ -258,7 +265,9 @@
             title: "",
             markdown: "",
             html: "",
-            tags: ""
+            tags: "",
+            status: 0,
+            comment: 0
           },
           saving: false,
           timeoutSaveId: false
@@ -543,7 +552,7 @@
           markdown: value,
           html: render,
           digest: digest,
-          tags:vm.article.currentArticle.tags
+          tags: vm.article.currentArticle.tags
         }
         vm.article.saving = true;
         article.update.r(vm.article.currentArticle.id, params)
@@ -559,7 +568,7 @@
             this.$message({
               type: 'info',
               message: '保存成功！',
-              duration:500
+              duration: 500
             });
           })
           .catch(util.catchError)
@@ -576,7 +585,25 @@
             }
             vm.$message({
               type: 'info',
-              message: '操作成功'
+              message: '操作成功',
+              duration: 1000
+            });
+          })
+      },
+      onArticleComment(status) {
+        let vm = this;
+        article.comment.r(vm.article.currentArticle.id, status)
+          .then(data => {
+            vm.article.currentArticle.comment = status;
+            for (var i = 0; i < vm.article.articles.length; i++) {
+              if (vm.article.currentArticle.id == vm.article.articles[i].id) {
+                vm.article.articles[i].comment = status;
+              }
+            }
+            vm.$message({
+              type: 'info',
+              message: '操作成功',
+              duration: 1000
             });
           })
       },

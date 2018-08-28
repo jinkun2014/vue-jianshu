@@ -59,11 +59,19 @@ const seq = {
   }
 }
 
-//发布
+//发布状态
 const publish = {
-  p: ['post,' + preUrlPath + '/{id}/publish/{status}'],//暂时没用留作权限控制使用
+  p: ['put,' + preUrlPath + '/{id}/publish/{status}'],//暂时没用留作权限控制使用
   r: (id, status, params) => {
     return instance.put(preUrlPath + '/' + id + '/publish/' + status, params);
+  }
+}
+
+//评论状态
+const comment = {
+  p: ['put,' + preUrlPath + '/{id}/comment/{status}'],//暂时没用留作权限控制使用
+  r: (id, status, params) => {
+    return instance.put(preUrlPath + '/' + id + '/comment/' + status, params);
   }
 }
 
@@ -74,5 +82,6 @@ export {
   list,
   get,
   seq,
-  publish
+  publish,
+  comment
 }
