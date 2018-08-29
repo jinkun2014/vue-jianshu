@@ -8,6 +8,8 @@ import ElementUI from 'element-ui'
 import './styles/common.scss'
 Vue.use(ElementUI)
 
+import 'font-awesome/scss/font-awesome.scss'
+
 Vue.config.productionTip = false
 
 Vue.directive('focus', {

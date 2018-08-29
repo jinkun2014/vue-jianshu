@@ -17,7 +17,7 @@
       let localUser = util.session('user');
       if (localUser) {
         this.user = localUser;
-        this.$router.push({path: "/write"});
+        //this.$router.push({path: "/write"});
       } else {
         //跳转到登录页
         this.$router.push({path: "/login", query: {from: this.$router.currentRoute.path}});
@@ -27,6 +27,7 @@
 </script>
 <style>
   #container {
-    height: 100%
+    height: 100%;
+    padding: 0;
   }
 </style>

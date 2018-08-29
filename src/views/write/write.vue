@@ -191,14 +191,18 @@
           <input type="text" class="tag" placeholder="标签1,标签2" v-model="article.currentArticle.tags"/>
         </el-row>
         <el-row style="height: calc(100% - 64px);">
-          <mdeditor
-            ref="editor"
+          <!--<mdeditor-->
+          <!--ref="editor"-->
+          <!--v-model="article.currentArticle.markdown"-->
+          <!--:save="onArticleSave"-->
+          <!--:change="onArticleChange"-->
+          <!--:imgAdd="imgAdd"-->
+          <!--:imgDel="imgDel"-->
+          <!--style="height: 100%"/>-->
+          <editor
             v-model="article.currentArticle.markdown"
-            :save="onArticleSave"
-            :change="onArticleChange"
-            :imgAdd="imgAdd"
-            :imgDel="imgDel"
-            style="height: 100%"/>
+            :onChange="onArticleChange"
+            :onSave="onArticleSave"/>
         </el-row>
       </div>
       <div v-if="article.currentArticle.id == 0"
@@ -218,6 +222,8 @@
   // Local Registration
   import mdeditor from '../../components/mdeditor/index'
 
+  import editor from '../../components/editor'
+
   import * as util from '../../assets/util'
   // 分类
   import * as category from '../../api/category'
@@ -227,7 +233,8 @@
   export default {
     components: {
       draggable,
-      mdeditor
+      mdeditor,
+      editor
     },
     data() {
       return {
