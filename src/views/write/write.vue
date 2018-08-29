@@ -51,7 +51,7 @@
           <ul class="category-list">
             <draggable v-model="category.categories" @update="categoryDragEnd">
               <template v-for="(c, index) in category.categories">
-                <li class="item" :class="{active:c.id==category.currentCategory.id}" @click="onCategoryClick(c.id)">
+                <li class="item" :class="{active:c.id==category.currentCategory.id}" @click="onCategoryClick(c)">
                   <span class="text">{{c.name}}</span>
                   <el-dropdown v-if="c.id==category.currentCategory.id"
                                trigger="click"
@@ -111,7 +111,7 @@
           </li>
           <draggable v-model="article.articles" @update="articleDragEnd">
             <template v-for="(a, index) in article.articles">
-              <li class="item" :class="{active:a.id==article.currentArticle.id}" @click="onArticleClick(a.id)">
+              <li class="item" :class="{active:a.id==article.currentArticle.id}" @click="onArticleClick(a)">
                 <span class="text" style="display: block;height: 60px;line-height: 60px">{{a.title}}</span>
                 <el-dropdown v-if="a.id==article.currentArticle.id" trigger="click" size="mini"
                              style="float: right;height: 10px;width: 10px;margin-top: -25px;">
@@ -201,6 +201,7 @@
           <!--style="height: 100%"/>-->
           <editor
             v-model="article.currentArticle.markdown"
+            :onFocus="onArticleFocus"
             :onChange="onArticleChange"
             :onSave="onArticleSave"/>
         </el-row>
@@ -277,7 +278,7 @@
             comment: 0
           },
           saving: false,
-          timeoutSaveId: false
+          timeoutSaveId: -1
         },
       }
     },
@@ -304,7 +305,7 @@
       "article.currentArticle.id"() {
         let vm = this;
         if (vm.article.currentArticle.id != 0) {
-          vm.loadArticle(vm.article.currentArticle.id)
+          vm.loadArticleContent(vm.article.currentArticle.id)
         }
       },
     },
@@ -324,14 +325,14 @@
           .then(data => {
             vm.category.categories = data;
             if (vm.category.categories.length > 0) {
-              vm.category.currentCategory.id = vm.category.categories[0].id
+              vm.onCategoryClick(vm.category.categories[0]);
             }
             vm.category.listLoading = false;
           })
           .catch(util.catchError);
       },
-      onCategoryClick(id) {
-        this.category.currentCategory.id = id;
+      onCategoryClick(c) {
+        this.category.currentCategory = c;
       },
       onCategoryAddSubmit() {
         let vm = this;
@@ -376,7 +377,7 @@
             // 隐藏编辑对话框
             vm.category.addDialogShow = false;
             // 选中新增分类
-            vm.category.currentCategory.id = data.id;
+            vm.onCategoryClick(data)
           })
           .catch(util.catchError)
       },
@@ -443,6 +444,7 @@
             vm.article.articles = data;
             if (vm.article.articles.length > 0) {
               vm.article.currentArticle.id = vm.article.articles[0].id
+              vm.article.currentArticle.title = vm.article.articles[0].title
             } else {
               vm.article.currentArticle.id = 0
             }
@@ -458,6 +460,20 @@
           .then(data => {
             if (data) {
               vm.article.currentArticle = data;
+              vm.article.contentLoading = false;
+              vm.article.listLoading = false;
+            }
+          })
+          .catch(util.catchError)
+      },
+      loadArticleContent(id) {
+        let vm = this;
+        vm.article.listLoading = true;
+        vm.article.contentLoading = true;
+        article.content.r(id)
+          .then(data => {
+            if (data) {
+              vm.article.currentArticle.content = data.content;
               vm.article.contentLoading = false;
               vm.article.listLoading = false;
             }
@@ -480,16 +496,16 @@
             } else {
               vm.article.articles.unshift(data)
             }
-            vm.article.currentArticle.id = data.id;
+            vm.onArticleClick(data);
 
             vm.article.saving = false;
             vm.article.listLoading = false;
           })
           .catch(util.catchError)
       },
-      onArticleClick(id) {
+      onArticleClick(a) {
         let vm = this;
-        vm.article.currentArticle.id = id;
+        vm.article.currentArticle = a;
       },
       onArticleDel(id) {
         let vm = this;
@@ -614,12 +630,18 @@
             });
           })
       },
+      onArticleFocus(focus) {
+        console.info(focus)
+        this.article.timeoutSaveId = focus ? 0 : -1
+      },
       onArticleChange(value, render) {
-        // let vm = this;
-        // window.clearTimeout(vm.article.timeoutSaveId);
-        // vm.article.timeoutSaveId = window.setTimeout(function () {
-        //   vm.onArticleSave(value, render)
-        // }, 2000);
+        let vm = this;
+        if (vm.article.timeoutSaveId != -1) {
+          window.clearTimeout(vm.article.timeoutSaveId);
+          vm.article.timeoutSaveId = window.setTimeout(function () {
+            vm.onArticleSave(value, render)
+          }, 2000);
+        }
       },
       imgAdd(pos, $file) {
         let vm = this;

@@ -40,28 +40,29 @@ npm install font-awesome --save-dev
     </div>
     <div class="md-panel">
       <div class="left" :class="temp_fullscreen?'':'single-edit'">
-        <div class="auto-textarea-wrapper"
-             :style="{fontSize: fontSize , lineHeight: lineHeight, height: '100%'}">
+        <div class="auto-textarea-wrapper">
             <textarea
+              class="auto-textarea-input"
+              spellcheck="false"
               ref="mTextarea"
               v-model="temp_value"
               :autofocus="temp_autofocus"
-              spellcheck="false"
               :placeholder="placeholder"
               :style="{fontSize: fontSize , lineHeight: lineHeight}"
               :class="{'no-border': !border , 'no-resize': !resize}"
               @keydown.ctrl.s="$save"
               @keydown.ctrl.d="$removeLine"
               @keydown.tab="$tab"
-              @scroll="$edit_scroll"
-              class="auto-textarea-input"/>
+              @focus="$in"
+              @blur="$out"
+              @scroll="$edit_scroll"/>
         </div>
       </div>
-      <div class="right" :style="{display:temp_fullscreen?'block':'none'}">
-        <div class="markdown-body"
-             style="padding: 15px;box-sizing: border-box;height: 100%"
-             :style="{scrollTop:edit_scroll_height}"
-             v-html="temp_html">
+      <div ref="showPanel" class="right" :style="{display:temp_fullscreen?'block':'none'}">
+        <div
+          class="markdown-body"
+          style="padding: 15px;box-sizing: border-box;height: 100%"
+          v-html="temp_html">
         </div>
       </div>
     </div>
@@ -99,6 +100,10 @@ npm install font-awesome --save-dev
         type: Function,
         default: null
       },
+      onFocus: {
+        type: Function,
+        default: null
+      },
       autofocus: {
         type: Boolean,
         default: false
@@ -130,7 +135,7 @@ npm install font-awesome --save-dev
     },
     data() {
       return {
-        edit_scroll_height:-1,
+        edit_scroll_height: -1,
         temp_html: (() => {
           return Marked(this.value);
         })(),
@@ -181,8 +186,20 @@ npm install font-awesome --save-dev
           $event.returnValue = false;
         }
       },
-      $edit_scroll($event){
-        console.info(this.$refs.mTextarea)
+      $edit_scroll($event) {
+        let ratio = this.$refs.mTextarea.scrollTop / (this.$refs.mTextarea.scrollHeight - this.$refs.mTextarea.offsetHeight);
+        let height = ratio * (this.$refs.showPanel.scrollHeight - this.$refs.showPanel.offsetHeight);
+        this.$refs.showPanel.scrollTop = height;
+      },
+      $in() {
+        if (this.onFocus) {
+          this.onFocus(true);
+        }
+      },
+      $out() {
+        if (this.onFocus) {
+          this.onFocus(false);
+        }
       }
     },
     watch: {
@@ -208,8 +225,17 @@ npm install font-awesome --save-dev
     },
     created() {
       // 初始化Marked的选项
+      let renderer = new Marked.Renderer();
+      // Override function
+      renderer.heading = function (text, level) {
+        var escapedText = text;//.toLowerCase().replace(/[^\w]+/g, '-');
+
+        return `<h${level}><a id="${escapedText}" href="#"></a>${text}</h${level}>`;
+      };
+
       Marked.setOptions({
-        //sanitize: true,
+        renderer: renderer,
+        sanitize: true,
         highlight: function (code) {
           return hljs.highlightAuto(code).value;
         },
@@ -248,6 +274,7 @@ npm install font-awesome --save-dev
     z-index: 1;
     box-sizing: border-box;
     border-bottom: 1px #eee solid;
+    border-top: 1px #eee solid;
   }
 
   .md-top .top-left-item, .md-top .top-right-item {

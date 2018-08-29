@@ -51,6 +51,14 @@ const get = {
   }
 }
 
+//查询内容
+const content = {
+  p: ['get,' + preUrlPath + '/{id}/content'],//暂时没用留作权限控制使用
+  r: (id) => {
+    return instance.get(preUrlPath + '/' + id + "/content")
+  }
+}
+
 //更新
 const seq = {
   p: ['post,' + preUrlPath + '/seq'],//暂时没用留作权限控制使用
@@ -81,6 +89,7 @@ export {
   del,
   list,
   get,
+  content,
   seq,
   publish,
   comment
