@@ -63,7 +63,7 @@ const content = {
 const seq = {
   p: ['post,' + preUrlPath + '/seq'],//暂时没用留作权限控制使用
   r: (params) => {
-    return instance.post(preUrlPath + '/seq', params);
+    return instance.post(preUrlPath + '/seq',params);
   }
 }
 
@@ -71,7 +71,11 @@ const seq = {
 const publish = {
   p: ['put,' + preUrlPath + '/{id}/publish/{status}'],//暂时没用留作权限控制使用
   r: (id, status, params) => {
-    return instance.put(preUrlPath + '/' + id + '/publish/' + status, params);
+    return instance.put(preUrlPath + '/' + id + '/publish/' + status, Qs.stringify(params), {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }
+    });
   }
 }
 
@@ -79,7 +83,11 @@ const publish = {
 const comment = {
   p: ['put,' + preUrlPath + '/{id}/comment/{status}'],//暂时没用留作权限控制使用
   r: (id, status, params) => {
-    return instance.put(preUrlPath + '/' + id + '/comment/' + status, params);
+    return instance.put(preUrlPath + '/' + id + '/comment/' + status,Qs.stringify(params), {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }
+    });
   }
 }
 

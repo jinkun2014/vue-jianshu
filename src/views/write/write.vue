@@ -130,17 +130,8 @@
                         type="text"
                         size="medium"
                         style="color: #333;width:100%;text-align: left"
-                        @click="onArticlePublish(1)">
-                        发布文章
-                      </el-button>
-                    </el-dropdown-item>
-                    <el-dropdown-item>
-                      <el-button
-                        type="text"
-                        size="medium"
-                        style="color: #333;width:100%;text-align: left"
-                        @click="onArticlePublish(0)">
-                        设为私密
+                        @click="onArticlePublish(article.currentArticle.status!=0?0:1)">
+                        {{article.currentArticle.status!=0?'设为私密':'发布文章'}}
                       </el-button>
                     </el-dropdown-item>
                     <el-dropdown-item>
@@ -187,20 +178,20 @@
           <span style="float: right;margin:5px 10px 0 0;color:#666;" :loading="article.saving">{{ article.saving?'保存中...':'已保存' }}</span>
         </el-row>
         <el-row>
-          <input type="text" class="title" v-model="article.currentArticle.title"/>
+          <input type="text" class="title" spellcheck="false" v-model="article.currentArticle.title"/>
           <input type="text" class="tag" placeholder="标签1,标签2" v-model="article.currentArticle.tags"/>
         </el-row>
         <el-row style="height: calc(100% - 64px);">
           <!--<mdeditor-->
           <!--ref="editor"-->
-          <!--v-model="article.currentArticle.markdown"-->
+          <!--v-model="article.currentArticle.content"-->
           <!--:save="onArticleSave"-->
           <!--:change="onArticleChange"-->
           <!--:imgAdd="imgAdd"-->
           <!--:imgDel="imgDel"-->
           <!--style="height: 100%"/>-->
           <editor
-            v-model="article.currentArticle.markdown"
+            v-model="article.currentArticle.content"
             :onFocus="onArticleFocus"
             :onChange="onArticleChange"
             :onSave="onArticleSave"/>
@@ -271,7 +262,7 @@
           currentArticle: {
             id: 0,
             title: "",
-            markdown: "",
+            content: "",
             html: "",
             tags: "",
             status: 0,
@@ -443,11 +434,19 @@
           .then(data => {
             vm.article.articles = data;
             if (vm.article.articles.length > 0) {
-              vm.article.currentArticle.id = vm.article.articles[0].id
-              vm.article.currentArticle.title = vm.article.articles[0].title
+              vm.onArticleClick(vm.article.articles[0])
             } else {
-              vm.article.currentArticle.id = 0
+              vm.onArticleClick({
+                id: 0,
+                title: "",
+                content: "",
+                html: "",
+                tags: "",
+                status: 0,
+                comment: 0
+              })
             }
+
             vm.article.listLoading = false;
           })
           .catch(util.catchError)
@@ -474,9 +473,9 @@
           .then(data => {
             if (data) {
               vm.article.currentArticle.content = data.content;
-              vm.article.contentLoading = false;
-              vm.article.listLoading = false;
             }
+            vm.article.contentLoading = false;
+            vm.article.listLoading = false;
           })
           .catch(util.catchError)
       },
@@ -559,33 +558,20 @@
       },
       onArticleSave(value, render) {
         let vm = this;
+        // 停止自动保存
+        window.clearTimeout(vm.article.timeoutSaveId);
 
-        let digest = '';
-        if (render) {
-          let el = document.createElement('div');
-          el.innerHTML = render;
-          let b = el.getElementsByTagName('blockquote')
-          if (b && b.length > 0) {
-            digest = b[0].innerHTML;
-          }
-        }
+        vm.article.currentArticle.content = value;
+        vm.article.currentArticle.html = render;
 
         let params = {
           title: vm.article.currentArticle.title,
-          markdown: value,
-          html: render,
-          digest: digest,
-          tags: vm.article.currentArticle.tags
+          tags: vm.article.currentArticle.tags,
+          content: value
         }
         vm.article.saving = true;
         article.update.r(vm.article.currentArticle.id, params)
           .then(data => {
-            vm.article.currentArticle = data;
-            for (var i = 0; i < vm.article.articles.length; i++) {
-              if (data.id == vm.article.articles[i].id) {
-                vm.article.articles[i].title = data.title;
-              }
-            }
             vm.article.saving = false;
 
             this.$message({
@@ -598,7 +584,26 @@
       },
       onArticlePublish(status) {
         let vm = this;
-        article.publish.r(vm.article.currentArticle.id, status)
+
+        let digest = '';
+        if (vm.article.currentArticle.html) {
+          let el = document.createElement('div');
+          el.innerHTML = vm.article.currentArticle.html;
+          let b = el.getElementsByTagName('blockquote');
+          if (b && b.length > 0) {
+            digest = b[0].innerHTML;
+          }
+        }
+
+        let params = {
+          title: vm.article.currentArticle.title,
+          tags: vm.article.currentArticle.tags,
+          content: vm.article.currentArticle.content,
+          html: vm.article.currentArticle.html,
+          digest: digest,
+        }
+
+        article.publish.r(vm.article.currentArticle.id, status, params)
           .then(data => {
             vm.article.currentArticle.status = status;
             for (var i = 0; i < vm.article.articles.length; i++) {
