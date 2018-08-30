@@ -170,7 +170,7 @@ export const insertTab = (obj) => {
       obj.value = tmpStr.substring(0, startPos - lastLine.length) + '\t' + lastLine + tmpStr.substring(endPos, tmpStr.length);
     } else {
       //obj.value = tmpStr.substring(0, startPos) + '\t' + tmpStr.substring(endPos, tmpStr.length);
-      obj.value = tmpStr.substring(0, startPos) + ' ' + tmpStr.substring(endPos, tmpStr.length);
+      obj.value = tmpStr.substring(0, startPos) + '\t' + tmpStr.substring(endPos, tmpStr.length);
     }
     obj.selectionStart = obj.selectionEnd = startPos + 1;
   } else {
@@ -181,8 +181,7 @@ export const insertTab = (obj) => {
   return obj.value
 }
 // shift + tab
-export const unInsertTab = ($vm) => {
-  let obj = $vm.getTextareaDom();
+export const unInsertTab = (obj) => {
   if (typeof obj.selectionStart === 'number' && typeof obj.selectionEnd === 'number') {
     var startPos = obj.selectionStart;
     var endPos = obj.selectionEnd;
@@ -197,9 +196,9 @@ export const unInsertTab = ($vm) => {
     alert('Error: Browser version is too low')
     // obj.value += str;
   }
-  // 触发change事件
-  $vm.d_value = obj.value
   obj.focus();
+  // 触发change事件
+  return obj.value
 }
 // 插入enter
 export const insertEnter = ($vm, event) => {

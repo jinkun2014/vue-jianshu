@@ -130,8 +130,17 @@
                         type="text"
                         size="medium"
                         style="color: #333;width:100%;text-align: left"
-                        @click="onArticlePublish(article.currentArticle.status!=0?0:1)">
-                        {{article.currentArticle.status!=0?'设为私密':'发布文章'}}
+                        @click="onArticlePublish(1)">
+                        发布文章
+                      </el-button>
+                    </el-dropdown-item>
+                    <el-dropdown-item v-if="article.currentArticle.status!=0">
+                      <el-button
+                        type="text"
+                        size="medium"
+                        style="color: #333;width:100%;text-align: left"
+                        @click="onArticlePublish(0)">
+                        设为私密
                       </el-button>
                     </el-dropdown-item>
                     <el-dropdown-item>

@@ -8,38 +8,30 @@ npm install font-awesome --save-dev
 <template>
   <div class="md" :class="temp_fullscreen?'fullscreen':''">
     <div class="md-top">
-      <div class="top-left-item">
-        <button
-          type="button"
-          aria-hidden="true"
+      <template v-for="(tool, index) in temp_toolbar">
+        <span
+          class="op-btn"
           title="粗体 (ctrl+b)"
-          class="op-icon fa fa-bold"
-          @click="$B()"/>
-        <button
-          type="button"
-          aria-hidden="true"
-          title="图片 (ctrl+b)"
-          class="op-icon fa fa-picture-o"
-          @click="$Image()"/>
-      </div>
-      <div class="top-right-item">
-        <span class="op-btn">保存</span>
-
-        <button
-          type="button"
-          aria-hidden="true"
-          title="保存 (ctrl+s)"
-          class="op-icon fa fa-floppy-o"
-          @click="$save()"/>
-
-        <button
-          type="button"
-          aria-hidden="true"
-          class="op-icon"
-          :title="temp_fullscreen?'退出全屏':'全屏'"
-          :class="temp_fullscreen?'fa fa-compress selected':'fa fa-arrows-alt'"
-          @click="$fullscreen(!temp_fullscreen)"/>
-      </div>
+          :title="tool.title"
+          :class="{'left': tool.float=='left', 'right': tool.float=='right'}"
+          @click="$click(tool.callback)"
+          v-html="tool.text">
+        </span>
+      </template>
+      <!--<span class="op-btn" title="粗体 (ctrl+b)" @click="$B()"><i class="fa fa-bold"></i></span>-->
+      <!--<div class="top-left-item">-->
+      <!--<span class="op-btn" title="图片" @click="$Image()"><i class="fa fa-picture-o"></i></span>-->
+      <!--</div>-->
+      <!--<div class="top-right-item">-->
+      <!--<span class="op-btn" title="保存">保存</span>-->
+      <!--<span class="op-btn" title="保存" @click="$save()"><i class="fa fa-floppy-o"></i></span>-->
+      <!--<span class="op-btn"-->
+      <!--title="保存"-->
+      <!--:title="temp_fullscreen?'退出全屏':'全屏'"-->
+      <!--@click="$fullscreen(!temp_fullscreen)">-->
+      <!--<i :class="temp_fullscreen?'fa fa-compress selected':'fa fa-arrows-alt'"></i>-->
+      <!--</span>-->
+      <!--</div>-->
     </div>
     <div class="md-panel">
       <div class="left" :class="temp_fullscreen?'':'single-edit'">
@@ -53,9 +45,6 @@ npm install font-awesome --save-dev
               :placeholder="placeholder"
               :style="{fontSize: fontSize , lineHeight: lineHeight}"
               :class="{'no-border': !border , 'no-resize': !resize}"
-              @keydown.ctrl.s="$save"
-              @keydown.ctrl.d="$removeLine"
-              @keydown.tab="$tab"
               @focus="$in"
               @blur="$out"
               @scroll="$edit_scroll"/>
@@ -75,18 +64,24 @@ npm install font-awesome --save-dev
 <script type="text/ecmascript-6">
   import Marked from 'marked'
   import hljs from 'highlight.js'
+  import {keydownListen} from "./lib/keydown-listen";
   import {
     insertTextAtCaret,
     removeLine,
     insertTab,
+    unInsertTab,
     scrollLink
-  } from './extra-function'
+  } from './lib/extra-function'
 
   export default {
     components: {
       Marked
     },
     props: {
+      toolbar: {
+        type: Array,
+        default: null
+      },
       fullscreen: {
         type: Boolean,
         default: false
@@ -138,7 +133,42 @@ npm install font-awesome --save-dev
     },
     data() {
       return {
-        edit_scroll_height: -1,
+        temp_toolbar: [
+          {
+            text: "<i class=\"fa fa-bold\"></i>",
+            title: "粗体",
+            float: "left",
+            callback: this.$B
+          },
+          {
+            text: "<i class=\"fa fa-picture-o\"></i>",
+            title: "图片",
+            float: "left",
+            callback: this.$Image
+          },
+          {
+            /* 这个不知道怎么切换图标状态，感觉好low */
+            text: "<i id='full' class=\"fa fa-compress\" style=\"display: none\"></i><i id='notfull' class=\"fa fa-arrows-alt\"></i>",
+            title: "全屏",
+            float: "right",
+            callback: function ($vm) {
+              if ($vm.temp_fullscreen) {
+                document.getElementById("full").style.display = 'none';
+                document.getElementById("notfull").style.display = 'inline-block';
+              } else {
+                document.getElementById("full").style.display = 'inline-block';
+                document.getElementById("notfull").style.display = 'none';
+              }
+              $vm.$fullscreen(!$vm.temp_fullscreen)
+            }
+          },
+          {
+            text: "保存",
+            title: "保存",
+            float: "right",
+            callback: this.$save
+          },
+        ],
         temp_html: (() => {
           return Marked(this.value);
         })(),
@@ -157,16 +187,15 @@ npm install font-awesome --save-dev
       };
     },
     methods: {
-      $fullscreen(fullscreen) {
-        this.temp_fullscreen = fullscreen
+      $click(callback) {
+        typeof callback === 'function' && callback(this);
       },
-      $save($event) {
+      $fullscreen(fullscreen) {
+        this.temp_fullscreen = !this.temp_fullscreen
+      },
+      $save() {
         if (this.onSave) {
           this.onSave(this.temp_value, this.temp_html);
-        }
-        // 截断事件
-        if ($event) {
-          $event.returnValue = false;
         }
       },
       $B() {
@@ -175,19 +204,14 @@ npm install font-awesome --save-dev
       $Image() {
         this.temp_value = insertTextAtCaret(this.$refs.mTextarea, {prefix: "![](", subfix: ")", str: ""});
       },
-      $removeLine($event) {
+      $removeLine() {
         this.temp_value = removeLine(this.$refs.mTextarea);
-        // 截断事件
-        if ($event) {
-          $event.returnValue = false;
-        }
       },
-      $tab($event) {
+      $tab() {
         this.temp_value = insertTab(this.$refs.mTextarea);
-        // 截断事件
-        if ($event) {
-          $event.returnValue = false;
-        }
+      },
+      $untab() {
+        this.temp_value = unInsertTab(this.$refs.mTextarea);
       },
       $edit_scroll($event) {
         let ratio = this.$refs.mTextarea.scrollTop / (this.$refs.mTextarea.scrollHeight - this.$refs.mTextarea.offsetHeight);
@@ -204,6 +228,11 @@ npm install font-awesome --save-dev
           this.onFocus(false);
         }
       }
+    },
+    mounted() {
+      let vm = this;
+      // 监听事件
+      keydownListen(vm)
     },
     watch: {
       value: function (val, oldVal) {
@@ -248,6 +277,14 @@ npm install font-awesome --save-dev
 </script>
 <style rel="stylesheet/scss" lang="scss" scoped>
 
+  .left {
+    float: left;
+  }
+
+  .right {
+    float: right;
+  }
+
   .md {
     height: 100%;
     width: 100%;
@@ -265,13 +302,10 @@ npm install font-awesome --save-dev
 
   .md-top {
     width: 100%;
-    display: flex;
+    display: block;
     white-space: pre-line;
-    -webkit-box-flex: 0;
-    -webkit-flex: none;
-    -ms-flex: none;
-    flex: none;
-    min-height: 40px;
+    min-height: 41px;
+    height: 41px;
     border-bottom: none;
     background: #fff;
     z-index: 1;
@@ -343,15 +377,17 @@ npm install font-awesome --save-dev
   }
 
   .op-btn {
+    color: #595959;
     display: inline-block;
     height: 40px;
     line-height: 40px;
     text-align: center;
-    padding: 0 4px;
+    padding: 0 10px;
   }
 
   .op-btn:hover {
-    background: #ccc;
+    cursor: pointer;
+    background: #ddd;
   }
 
   .md-panel {
