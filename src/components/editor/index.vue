@@ -304,14 +304,15 @@ npm install font-awesome --save-dev
     width: 100%;
     display: block;
     white-space: pre-line;
-    min-height: 41px;
-    height: 41px;
+    min-height: 40px;
+    height: 40px;
     border-bottom: none;
     background: #fff;
     z-index: 1;
     box-sizing: border-box;
-    border-bottom: 1px #eee solid;
-    border-top: 1px #eee solid;
+    border-bottom: 0.1px #eee solid;
+    border-top: 0.1px #eee solid;
+    padding: 0 10px;
   }
 
   .md-top .top-left-item, .md-top .top-right-item {
