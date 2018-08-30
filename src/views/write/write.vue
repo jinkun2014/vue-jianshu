@@ -211,9 +211,6 @@
   // 拖拽排序
   import draggable from 'vuedraggable'
   // Markdown
-  // Local Registration
-  import mdeditor from '../../components/mdeditor/index'
-
   import editor from '../../components/editor'
 
   import * as util from '../../assets/util'
@@ -225,7 +222,6 @@
   export default {
     components: {
       draggable,
-      mdeditor,
       editor
     },
     data() {

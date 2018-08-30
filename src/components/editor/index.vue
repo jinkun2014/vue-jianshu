@@ -23,12 +23,15 @@ npm install font-awesome --save-dev
           @click="$Image()"/>
       </div>
       <div class="top-right-item">
+        <span class="op-btn">保存</span>
+
         <button
           type="button"
           aria-hidden="true"
           title="保存 (ctrl+s)"
           class="op-icon fa fa-floppy-o"
           @click="$save()"/>
+
         <button
           type="button"
           aria-hidden="true"
@@ -283,6 +286,7 @@ npm install font-awesome --save-dev
     -ms-flex: 1;
     flex: 1;
     min-height: 40px;
+    height: 40px;
     box-sizing: border-box;
   }
 
@@ -336,6 +340,18 @@ npm install font-awesome --save-dev
   .op-icon.selected {
     color: rgba(0, 0, 0, 0.8);
     background: #eaeaea;
+  }
+
+  .op-btn {
+    display: inline-block;
+    height: 40px;
+    line-height: 40px;
+    text-align: center;
+    padding: 0 4px;
+  }
+
+  .op-btn:hover {
+    background: #ccc;
   }
 
   .md-panel {
