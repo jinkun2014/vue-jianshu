@@ -6,15 +6,15 @@ npm install highlight.js --save
 npm install font-awesome --save-dev
 -->
 <template>
-  <div class="md" :class="temp_fullscreen?'fullscreen':''">
+  <div class="md" :class="i_v_fullscreen?'fullscreen':''">
     <div class="md-top">
-      <template v-for="(tool, index) in temp_toolbar">
+      <template v-for="(tool, index) in i_v_toolbar">
         <span
           class="op-btn"
           title="粗体 (ctrl+b)"
           :title="tool.title"
           :class="{'left': tool.float=='left', 'right': tool.float=='right'}"
-          @click="$click(tool.callback)"
+          @click="$click(tool.callback,index)"
           v-html="tool.text">
         </span>
       </template>
@@ -27,44 +27,62 @@ npm install font-awesome --save-dev
       <!--<span class="op-btn" title="保存" @click="$save()"><i class="fa fa-floppy-o"></i></span>-->
       <!--<span class="op-btn"-->
       <!--title="保存"-->
-      <!--:title="temp_fullscreen?'退出全屏':'全屏'"-->
-      <!--@click="$fullscreen(!temp_fullscreen)">-->
-      <!--<i :class="temp_fullscreen?'fa fa-compress selected':'fa fa-arrows-alt'"></i>-->
+      <!--:title="i_v_fullscreen?'退出全屏':'全屏'"-->
+      <!--@click="$fullscreen(!i_v_fullscreen)">-->
+      <!--<i :class="i_v_fullscreen?'fa fa-compress selected':'fa fa-arrows-alt'"></i>-->
       <!--</span>-->
       <!--</div>-->
     </div>
     <div class="md-panel">
-      <div class="left" :class="temp_fullscreen?'':'single-edit'">
+      <div class="left" :class="i_v_fullscreen?'':'single-edit'">
         <div class="auto-textarea-wrapper">
             <textarea
               class="auto-textarea-input"
               spellcheck="false"
               ref="mTextarea"
-              v-model="temp_value"
-              :autofocus="temp_autofocus"
+              v-model="i_v_value"
+              :autofocus="i_v_autofocus"
               :placeholder="placeholder"
               :style="{fontSize: fontSize , lineHeight: lineHeight}"
               :class="{'no-border': !border , 'no-resize': !resize}"
-              @focus="$in"
-              @blur="$out"
-              @scroll="$edit_scroll"/>
+              @focus="$i_e_in"
+              @blur="$i_e_out"
+              @scroll="$i_e_editScroll"
+              @paste="$i_e_paste"/>
         </div>
       </div>
-      <div ref="showPanel" class="right" :style="{display:temp_fullscreen?'block':'none'}">
+      <div ref="showPanel" class="right" :style="{display:i_v_fullscreen?'block':'none'}">
         <div
           class="markdown-body"
           style="padding: 15px;box-sizing: border-box;height: 100%"
-          v-html="temp_html">
+          v-html="i_v_html">
         </div>
       </div>
     </div>
+    <div class="md-popup" v-show="i_v_showPopup">
+      <div style="width: 100%;height: 100%;position: relative">
+        <div style="width:320px;height:100px;position:absolute;left:50%;top:50%;margin-top: -50px;margin-left: -160px;">
+          <span style="position: relative;display: inline-block;overflow: hidden;width: 100%;text-align: center;background: #333;color: #fff;height: 42px;line-height: 42px;cursor: pointer;">
+            <span>点击上传</span>
+            <input @change="$i_t_imageSelected" type="file" style="position: absolute;left: 0px;top: 0px;opacity: 0;-ms-filter: 'alpha(opacity=0)';height: 100%;width: 100%;">
+          </span>
+          <div style="width: 100%;text-align: center;height: 42px;line-height: 42px;cursor: pointer;">
+            <span @click="$i_t_image" style="text-decoration: underline;">插入连接</span>
+          </div>
+        </div>
+        <div style="width:60px;height:30px;position:absolute;bottom:10%;right:10%;text-align: center;cursor: pointer;">
+          <span style="text-decoration: underline;" @click="$i_t_cancelImage">取消</span>
+        </div>
+      </div>
+    </div>
+    <div class="md-popup-overlay" v-show="i_v_showPopup" @click="$i_t_cancelImage"></div>
   </div>
 </template>
 
 <script type="text/ecmascript-6">
   import Marked from 'marked'
   import hljs from 'highlight.js'
-  import {keydownListen} from "./lib/keydown-listen";
+  import {keydownListen, keyupListen} from "./lib/keydown-listen";
   import {
     insertTextAtCaret,
     removeLine,
@@ -78,41 +96,86 @@ npm install font-awesome --save-dev
       Marked
     },
     props: {
+      // 工具栏
       toolbar: {
         type: Array,
-        default: null
+        default: function () {
+          return [
+            {
+              text: "<i class=\"fa fa-bold\"></i>",
+              title: "粗体",
+              float: "left",
+              enabled: true,
+              callback: (($vm, index) => $vm.$i_t_b())
+            },
+            {
+              text: "<i class=\"fa fa-undo\"></i>",
+              title: "撤销(ctrl+z)",
+              float: "left",
+              enabled: true,
+              callback: (($vm, index) => $vm.$i_t_undo())
+            },
+            {
+              text: "<i class=\"fa fa-repeat\"></i>",
+              title: "重做(ctrl+shift+z)",
+              float: "left",
+              enabled: true,
+              callback: (($vm, index) => $vm.$i_t_redo())
+            },
+            {
+              text: "<i class=\"fa fa-picture-o\"></i>",
+              title: "图片",
+              float: "left",
+              enabled: true,
+              callback: (($vm, index) => $vm.$i_t_image())
+            },
+            {
+              text: "<i class=\"fa fa-picture-o\"></i>",
+              title: "图片",
+              float: "left",
+              enabled: true,
+              callback: (($vm, index) => $vm.i_v_showPopup = true)
+            },
+            // {
+            //   text: "<span style=\"position: relative;display: inline-block;overflow: hidden;line-height: 40px;\"><i class=\"fa fa-picture-o\"></i><input type=\"file\" accept=\"image/gif,image/jpeg,image/jpg,image/png,image/svg\" style=\"position: absolute;left: 0px;opacity: 0;-ms-filter: 'alpha(opacity=0)';height: 40px;width: 17px;\"></span>",
+            //   title: "图片",
+            //   float: "left",
+            //   enabled: true,
+            //   callback: (($vm, index) => {
+            //   })
+            // },
+            {
+              /* 这个不知道怎么切换图标状态，感觉好low */
+              text: "<i id='full' class='fa fa-arrows-alt'></i>",
+              title: "全屏",
+              float: "right",
+              enabled: true,
+              callback: (($vm, index) => {
+                $vm.$i_t_fullscreen(!$vm.i_v_fullscreen)
+
+                let full = "<i class='fa fa-arrows-alt'></i>"
+                let notfull = "<i class='fa fa-compress'></i>"
+                $vm.i_v_toolbar[index].text = $vm.i_v_fullscreen ? notfull : full
+              })
+            },
+            {
+              text: "保存",
+              title: "保存",
+              float: "right",
+              enabled: true,
+              callback: (($vm, index) => $vm.$i_t_save())
+            }
+          ]
+        }
       },
-      fullscreen: {
-        type: Boolean,
-        default: false
-      },
-      onFullscreen: {
-        type: Function,
-        default: null
-      },
-      onChange: {
-        type: Function,
-        default: null
-      },
-      onSave: {
-        type: Function,
-        default: null
-      },
-      onFocus: {
-        type: Function,
-        default: null
-      },
+      // 编辑框
       autofocus: {
         type: Boolean,
         default: false
       },
-      value: {
-        type: String,
-        default: ''
-      },
-      placeholder: {
-        type: String,
-        default: ''
+      fullscreen: {
+        type: Boolean,
+        default: false
       },
       border: {
         type: Boolean,
@@ -130,130 +193,205 @@ npm install font-awesome --save-dev
         type: String,
         default: '30px'
       },
+      // 默认值
+      value: {
+        type: String,
+        default: ''
+      },
+      placeholder: {
+        type: String,
+        default: '请输入...'
+      },
+      // 事件
+      onFullscreen: {
+        type: Function,
+        default: null
+      },
+      onChange: {
+        type: Function,
+        default: null
+      },
+      onSave: {
+        type: Function,
+        default: null
+      },
+      onFocus: {
+        type: Function,
+        default: null
+      },
     },
     data() {
       return {
-        temp_toolbar: [
-          {
-            text: "<i class=\"fa fa-bold\"></i>",
-            title: "粗体",
-            float: "left",
-            callback: this.$B
-          },
-          {
-            text: "<i class=\"fa fa-picture-o\"></i>",
-            title: "图片",
-            float: "left",
-            callback: this.$Image
-          },
-          {
-            /* 这个不知道怎么切换图标状态，感觉好low */
-            text: "<i id='full' class=\"fa fa-compress\" style=\"display: none\"></i><i id='notfull' class=\"fa fa-arrows-alt\"></i>",
-            title: "全屏",
-            float: "right",
-            callback: function ($vm) {
-              if ($vm.temp_fullscreen) {
-                document.getElementById("full").style.display = 'none';
-                document.getElementById("notfull").style.display = 'inline-block';
-              } else {
-                document.getElementById("full").style.display = 'inline-block';
-                document.getElementById("notfull").style.display = 'none';
-              }
-              $vm.$fullscreen(!$vm.temp_fullscreen)
-            }
-          },
-          {
-            text: "保存",
-            title: "保存",
-            float: "right",
-            callback: this.$save
-          },
-        ],
-        temp_html: (() => {
-          return Marked(this.value);
-        })(),
-        temp_value: (() => {
-          return this.value;
-        })(),
-        temp_fullscreen: (() => {
-          return this.fullscreen;
-        })(),
-        temp_autofocus: (() => {
-          if (this.autofocus) {
-            return 'autofocus'
-          }
-          return null;
-        })()
+        // 工具栏
+        i_v_toolbar: (() => this.toolbar)(),
+        i_v_fullscreen: (() => this.fullscreen)(),
+        i_v_autofocus: (() => this.autofocus ? 'autofocus' : null)(),
+        i_v_showPopup: false,
+        // props 文本
+        i_v_value: "",
+        i_v_html: "",
+        // 历史记录
+        i_v_history_init: false,
+        i_v_history: [],
+        i_v_history_index: -1,
+        i_v_current_timeout: ''
       };
     },
-    methods: {
-      $click(callback) {
-        typeof callback === 'function' && callback(this);
+    watch: {
+      value: function (val, oldVal) {
+        this.i_v_history_init = true;
+        this.i_v_value = val
       },
-      $fullscreen(fullscreen) {
-        this.temp_fullscreen = !this.temp_fullscreen
-      },
-      $save() {
-        if (this.onSave) {
-          this.onSave(this.temp_value, this.temp_html);
+      i_v_value: function (val, oldVal) {
+        let $vm = this;
+
+        // 渲染HTML
+        $vm.i_v_html = Marked(val)
+        // 触发onChange事件
+        if ($vm.onChange) {
+          $vm.onChange(val, $vm.i_v_html);
+        }
+
+        if ($vm.i_v_history_init) {
+          $vm.i_v_history_init = false;
+          $vm.i_v_history = new Array(val)
+          $vm.i_v_history_index = 0;
+        } else {
+          // 保存历史
+          if ($vm.i_v_value === $vm.i_v_history[$vm.i_v_history_index]) return;
+          window.clearTimeout($vm.i_v_current_timeout)
+          $vm.i_v_current_timeout = setTimeout(() => $vm.i_m_saveHistory(), 500)
         }
       },
-      $B() {
-        this.temp_value = insertTextAtCaret(this.$refs.mTextarea, {prefix: "**", subfix: "**", str: ""});
+      i_v_history_index: function (val, oldVal) {
+        let i_vm = this;
+        if (i_vm.i_v_history_index > 20) {
+          i_vm.i_v_history_index.shift()
+          i_vm.i_v_history_index = i_vm.i_v_history_index - 1
+        }
+        i_vm.i_v_value = i_vm.i_v_history[i_vm.i_v_history_index]
       },
-      $Image() {
-        this.temp_value = insertTextAtCaret(this.$refs.mTextarea, {prefix: "![](", subfix: ")", str: ""});
+      i_v_fullscreen: function (val, oldVal) {
+        if (this.onFullscreen) {
+          this.onFullscreen(oldVal);
+        }
       },
-      $removeLine() {
-        this.temp_value = removeLine(this.$refs.mTextarea);
+    },
+    methods: {
+      // 工具栏按钮事件
+      $i_t_b() {
+        this.i_v_value = insertTextAtCaret(this.$refs.mTextarea, {prefix: "**", subfix: "**", str: ""});
       },
-      $tab() {
-        this.temp_value = insertTab(this.$refs.mTextarea);
+      $i_t_undo() {
+        this.$i_e_undo()
       },
-      $untab() {
-        this.temp_value = unInsertTab(this.$refs.mTextarea);
+      $i_t_redo() {
+        this.$i_e_redo()
       },
-      $edit_scroll($event) {
+      $i_t_image() {
+        this.i_v_showPopup = false;
+        this.i_v_value = insertTextAtCaret(this.$refs.mTextarea, {prefix: "![](", subfix: ")", str: ""});
+      },
+      $i_t_save() {
+        this.$i_e_save()
+      },
+      $i_t_fullscreen(fullscreen) {
+        this.i_v_fullscreen = !this.i_v_fullscreen
+      },
+      $i_t_cancelImage() {
+        this.i_v_showPopup = false;
+      },
+      $i_t_imageSelected($event) {
+
+      },
+      // 快捷键事件
+      $i_e_save() {
+        if (this.onSave) {
+          this.onSave(this.i_v_value, this.i_v_html);
+        }
+      },
+      $i_e_redo() {
+        let $vm = this;
+        if ($vm.i_v_history_index < $vm.i_v_history.length - 1) {
+          $vm.i_v_history_index++
+        }
+      },
+      $i_e_undo() {
+        let $vm = this;
+        if ($vm.i_v_history_index > 0) {
+          $vm.i_v_history_index--
+        }
+        let start = $vm.$refs.mTextarea.selectionStart
+        let currentLength = $vm.i_v_value.length
+        $vm.$nextTick(() => {
+          // 光标操作
+          start -= currentLength - $vm.i_v_value.length
+          $vm.$refs.mTextarea.selectionStart = start
+          $vm.$refs.mTextarea.selectionEnd = start
+        })
+      },
+      $i_e_removeLine() {
+        this.i_v_value = removeLine(this.$refs.mTextarea);
+      },
+      $i_e_insertTab() {
+        this.i_v_value = insertTab(this.$refs.mTextarea);
+      },
+      $i_e_unInsertTab() {
+        this.i_v_value = unInsertTab(this.$refs.mTextarea);
+      },
+      // 其它事件
+      $i_e_editScroll($e) {
         let ratio = this.$refs.mTextarea.scrollTop / (this.$refs.mTextarea.scrollHeight - this.$refs.mTextarea.offsetHeight);
         let height = ratio * (this.$refs.showPanel.scrollHeight - this.$refs.showPanel.offsetHeight);
         this.$refs.showPanel.scrollTop = height;
       },
-      $in() {
+      $i_e_in($e) {
         if (this.onFocus) {
           this.onFocus(true);
         }
       },
-      $out() {
+      $i_e_out($e) {
         if (this.onFocus) {
           this.onFocus(false);
         }
-      }
+      },
+      $i_e_paste($e) {
+        var clipboardData = $e.clipboardData;
+        if (clipboardData) {
+          var items = clipboardData.items;
+          if (!items) return;
+          var types = clipboardData.types || [];
+          var item = null;
+          for (var i = 0; i < types.length; i++) {
+            if (types[i] === 'Files') {
+              item = items[i];
+              break;
+            }
+          }
+          if (item && item.kind === 'file') {
+            // prevent filename being pasted parallel along
+            // with the image pasting process
+            $e.preventDefault()
+            var oFile = item.getAsFile();
+            console.info(oFile)
+          }
+        }
+      },
+      // 方法
+      $click(callback, index) {
+        typeof callback === 'function' && callback(this, index);
+      },
+      i_m_saveHistory() {
+        let i_vm = this;
+        i_vm.i_v_history.splice(i_vm.i_v_history_index + 1, i_vm.i_v_history.length)
+        i_vm.i_v_history.push(i_vm.i_v_value)
+        i_vm.i_v_history_index = i_vm.i_v_history.length - 1
+      },
     },
     mounted() {
-      let vm = this;
-      // 监听事件
-      keydownListen(vm)
-    },
-    watch: {
-      value: function (val, oldVal) {
-        this.temp_value = val
-      },
-      temp_value: function (val, oldVal) {
-        this.temp_html = Marked(val)
-        if (this.onChange) {
-          this.onChange(val, this.temp_html);
-        }
-        //this.$emit("onChange", val, this.temp_html);
-      },
-      fullscreen: function (val, oldVal) {
-        this.temp_fullscreen = val
-      },
-      temp_fullscreen: function (val, oldVal) {
-        if (this.onFullscreen) {
-          this.onFullscreen(oldVal);
-        }
-        //this.$emit("onFullscreen", val);
-      }
+      var $vm = this;
+      // 监听按下事件
+      keydownListen($vm)
     },
     created() {
       // 初始化Marked的选项
@@ -266,15 +404,42 @@ npm install font-awesome --save-dev
       };
 
       Marked.setOptions({
+        gfm: true,
+        breaks: true,
         renderer: renderer,
         sanitize: true,
-        highlight: function (code) {
-          return hljs.highlightAuto(code).value;
-        },
+        tables: true,
+        // highlight: function (code) {
+        //   return hljs.highlightAuto(code).value;
+        // },
+        highlight: function (code, lang) {
+          if (lang && hljs.getLanguage(lang)) {
+            return hljs.highlight(lang, code, true).value;
+          } else {
+            return hljs.highlightAuto(code).value;
+          }
+        }
       })
     }
   };
 </script>
+<style>
+  @import "github-markdown.css";
+
+  .markdown-body {
+    box-sizing: border-box;
+    min-width: 200px;
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 45px;
+  }
+
+  @media (max-width: 767px) {
+    .markdown-body {
+      padding: 15px;
+    }
+  }
+</style>
 <style rel="stylesheet/scss" lang="scss" scoped>
 
   .left {
@@ -438,6 +603,31 @@ npm install font-awesome --save-dev
     -ms-flex: 0 0 100%;
     flex: 0 0 100%;
     overflow-y: auto;
+  }
+
+  .md .md-popup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    margin-left: -200px;
+    margin-top: -150px;
+    width: 400px;
+    height: 300px;
+    padding: 0;
+    background: #fff;
+    color: #333;
+    z-index: 9999;
+    border-radius: 5px;
+  }
+
+  .md .md-popup-overlay {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    z-index: 2080;
+    background-color: rgba(0, 0, 0, 0.3);
   }
 
   .auto-textarea-wrapper {

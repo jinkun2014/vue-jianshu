@@ -83,7 +83,7 @@ export const keydownListen = ($vm) => {
         case KEY_CODE.TAB: {
           // TAB
           e.preventDefault()
-          $vm.$tab()
+          $vm.$i_e_insertTab()
           break;
         }
         // case KEY_CODE.ENTER: {
@@ -118,7 +118,7 @@ export const keydownListen = ($vm) => {
         case KEY_CODE.D: {
           // D
           e.preventDefault()
-          $vm.$removeLine()
+          $vm.$i_e_removeLine()
           break;
         }
         case KEY_CODE.M: {
@@ -144,12 +144,13 @@ export const keydownListen = ($vm) => {
         case KEY_CODE.S: {
           // S
           e.preventDefault()
-          $vm.$save()
+          $vm.$i_e_save()
           break;
         }
         case KEY_CODE.Z: {
           // Z
           e.preventDefault()
+          $vm.$i_e_undo();
           break;
         }
         case KEY_CODE.Y: {
@@ -261,23 +262,24 @@ export const keydownListen = ($vm) => {
           break;
         }
         case KEY_CODE.D: {
-          // D
           e.preventDefault()
           break;
         }
         case KEY_CODE.L: {
-          // D
           e.preventDefault()
           break;
         }
         case KEY_CODE.R: {
-          // D
           e.preventDefault()
           break;
         }
         case KEY_CODE.C: {
-          // D
           e.preventDefault()
+          break;
+        }
+        case KEY_CODE.Z: {
+          e.preventDefault()
+          $vm.$i_e_redo()
           break;
         }
       }
@@ -287,7 +289,7 @@ export const keydownListen = ($vm) => {
         case KEY_CODE.TAB: {
           // TAB
           e.preventDefault()
-          $vm.$untab()
+          $vm.$i_e_unInsertTab()
           break;
         }
       }

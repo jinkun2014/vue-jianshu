@@ -235,6 +235,55 @@
     },
     data() {
       return {
+        vm: this,
+        editor: {
+          index: -1,
+          // 自定义按钮
+          toolbar: [
+            {
+              text: "<i class=\"fa fa-picture-o\"></i>",
+              title: "图片",
+              float: "left",
+              enabled: true,
+              callback: function ($vm, index) {
+                $vm.$Image()
+              }
+            },
+            {
+              text: "<i class=\"fa fa-bold\"></i>",
+              title: "粗体",
+              float: "left",
+              enabled: true,
+              callback: function ($vm, index) {
+                $vm.$B()
+              }
+            },
+            {
+              /* 这个不知道怎么切换图标状态，感觉好low */
+              text: "<i id='full' class=\"fa fa-arrows-alt\"></i>",
+              title: "全屏",
+              float: "right",
+              enabled: true,
+              callback: function ($vm, index) {
+                $vm.$fullscreen(!$vm.i_v_fullscreen)
+
+                let full = "<i class=\"fa fa-arrows-alt\"></i>"
+                let notfull = "<i class=\"fa fa-compress\"></i>"
+                $vm.i_v_toolbar[index].text = $vm.i_v_fullscreen ? notfull : full
+              }
+            },
+            {
+              text: "保存",
+              title: "保存",
+              float: "right",
+              enabled: true,
+              callback: (($vm, index) => {
+                this.editor.index = index;
+                $vm.$save();
+              })
+            }
+          ]
+        },
         category: {
           listLoading: false,
           addDialogShow: false,
@@ -304,6 +353,10 @@
           vm.loadArticleContent(vm.article.currentArticle.id)
         }
       },
+      "article.saving": function (val, oldVal) {
+        let vm = this;
+        //vm.editor.toolbar[vm.editor.index].text = val ? "保存中..." : "保存";
+      }
     },
     computed: {
       saving() {
@@ -641,17 +694,16 @@
           })
       },
       onArticleFocus(focus) {
-        console.info(focus)
         this.article.timeoutSaveId = focus ? 0 : -1
       },
       onArticleChange(value, render) {
-        let vm = this;
-        if (vm.article.timeoutSaveId != -1) {
-          window.clearTimeout(vm.article.timeoutSaveId);
-          vm.article.timeoutSaveId = window.setTimeout(function () {
-            vm.onArticleSave(value, render)
-          }, 2000);
-        }
+        // let vm = this;
+        // if (vm.article.timeoutSaveId != -1) {
+        //   window.clearTimeout(vm.article.timeoutSaveId);
+        //   vm.article.timeoutSaveId = window.setTimeout(function () {
+        //     vm.onArticleSave(value, render)
+        //   }, 2000);
+        // }
       },
       imgAdd(pos, $file) {
         let vm = this;
