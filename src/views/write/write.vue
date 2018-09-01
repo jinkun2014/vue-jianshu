@@ -203,7 +203,8 @@
             v-model="article.currentArticle.content"
             :onFocus="onArticleFocus"
             :onChange="onArticleChange"
-            :onSave="onArticleSave"/>
+            :onSave="onArticleSave"
+            :onImageAdd="onImageAdd"/>
         </el-row>
       </div>
       <div v-if="article.currentArticle.id == 0"
@@ -697,6 +698,9 @@
         this.article.timeoutSaveId = focus ? 0 : -1
       },
       onArticleChange(value, render) {
+        let vm = this;
+        vm.article.currentArticle.content = value;
+        vm.article.currentArticle.html = render;
         // let vm = this;
         // if (vm.article.timeoutSaveId != -1) {
         //   window.clearTimeout(vm.article.timeoutSaveId);
@@ -705,22 +709,19 @@
         //   }, 2000);
         // }
       },
-      imgAdd(pos, $file) {
-        let vm = this;
-        // var formdata = new FormData();
-        // formdata.append('file', $file);
-        // article.imgUpload.r(formdata)
-        //   .then(data => {
-        //     /**
-        //      * $vm 指为mavonEditor实例，可以通过如下两种方式获取
-        //      * 1. 通过引入对象获取: `import {mavonEditor} from ...` 等方式引入后，`$vm`为`mavonEditor`
-        //      * 2. 通过$refs获取: html声明ref : `<mavon-editor ref=md ></mavon-editor>，`$vm`为 `this.$refs.md`
-        //      */
-        //     vm.$refs.editor.$img2Url(pos, data);
-        //   })
-        //   .catch(util.catchError);
-
-        vm.$refs.editor.$img2Url(pos, new Date().toLocaleTimeString());
+      onImageAdd($editor, $file) {
+        var formdata = new FormData();
+        formdata.append('file', $file);
+        article.imgUpload.r(1, formdata)
+          .then(data => {
+            /**
+             * $vm 指为mavonEditor实例，可以通过如下两种方式获取
+             * 1. 通过引入对象获取: `import {mavonEditor} from ...` 等方式引入后，`$vm`为`mavonEditor`
+             * 2. 通过$refs获取: html声明ref : `<mavon-editor ref=md ></mavon-editor>，`$vm`为 `this.$refs.md`
+             */
+            $editor.i_m_insertImgUrl(data)
+          })
+          .catch(util.catchError);
       },
       imgDel(pos, $file) {
         console.info(pos + "-" + $file)

@@ -59,15 +59,16 @@ npm install font-awesome --save-dev
         </div>
       </div>
     </div>
-    <div class="md-popup" v-show="i_v_showPopup">
-      <div style="width: 100%;height: 100%;position: relative">
+    <div class="md-popup" v-if="i_v_showPopupOverlay">
+      <div v-if="i_v_showImagePopup" style="width: 100%;height: 100%;position: relative">
         <div style="width:320px;height:100px;position:absolute;left:50%;top:50%;margin-top: -50px;margin-left: -160px;">
           <span style="position: relative;display: inline-block;overflow: hidden;width: 100%;text-align: center;background: #333;color: #fff;height: 42px;line-height: 42px;cursor: pointer;">
             <span>点击上传</span>
-            <input @change="$i_t_imageSelected" type="file" style="position: absolute;left: 0px;top: 0px;opacity: 0;-ms-filter: 'alpha(opacity=0)';height: 100%;width: 100%;">
+            <input ref="fileUpload" @change="$i_t_imageUpload" type="file" accept="image/*"
+                   style="position: absolute;left: 0px;top: 0px;opacity: 0;-ms-filter: 'alpha(opacity=0)';height: 100%;width: 100%;">
           </span>
           <div style="width: 100%;text-align: center;height: 42px;line-height: 42px;cursor: pointer;">
-            <span @click="$i_t_image" style="text-decoration: underline;">插入连接</span>
+            <span @click="$i_t_imageLink" style="text-decoration: underline;">插入连接</span>
           </div>
         </div>
         <div style="width:60px;height:30px;position:absolute;bottom:10%;right:10%;text-align: center;cursor: pointer;">
@@ -75,7 +76,7 @@ npm install font-awesome --save-dev
         </div>
       </div>
     </div>
-    <div class="md-popup-overlay" v-show="i_v_showPopup" @click="$i_t_cancelImage"></div>
+    <div class="md-popup-overlay" v-if="i_v_showPopupOverlay" @click="$i_t_cancelImage"></div>
   </div>
 </template>
 
@@ -102,11 +103,32 @@ npm install font-awesome --save-dev
         default: function () {
           return [
             {
+              text: "<i class=\"fa fa-picture-o\"></i>",
+              title: "图片",
+              float: "left",
+              enabled: true,
+              callback: (($vm, index) => $vm.$i_t_insertImage())
+            },
+            {
+              text: "<i class=\"fa fa-th\"></i>",
+              title: "表格",
+              float: "left",
+              enabled: true,
+              callback: (($vm, index) => $vm.$i_t_insertTable())
+            },
+            {
+              text: "<i class=\"fa fa-code\"></i>",
+              title: "代码",
+              float: "left",
+              enabled: true,
+              callback: (($vm, index) => $vm.$i_t_insertCode())
+            },
+            {
               text: "<i class=\"fa fa-bold\"></i>",
               title: "粗体",
               float: "left",
               enabled: true,
-              callback: (($vm, index) => $vm.$i_t_b())
+              callback: (($vm, index) => $vm.$i_t_insertB())
             },
             {
               text: "<i class=\"fa fa-undo\"></i>",
@@ -121,20 +143,6 @@ npm install font-awesome --save-dev
               float: "left",
               enabled: true,
               callback: (($vm, index) => $vm.$i_t_redo())
-            },
-            {
-              text: "<i class=\"fa fa-picture-o\"></i>",
-              title: "图片",
-              float: "left",
-              enabled: true,
-              callback: (($vm, index) => $vm.$i_t_image())
-            },
-            {
-              text: "<i class=\"fa fa-picture-o\"></i>",
-              title: "图片",
-              float: "left",
-              enabled: true,
-              callback: (($vm, index) => $vm.i_v_showPopup = true)
             },
             // {
             //   text: "<span style=\"position: relative;display: inline-block;overflow: hidden;line-height: 40px;\"><i class=\"fa fa-picture-o\"></i><input type=\"file\" accept=\"image/gif,image/jpeg,image/jpg,image/png,image/svg\" style=\"position: absolute;left: 0px;opacity: 0;-ms-filter: 'alpha(opacity=0)';height: 40px;width: 17px;\"></span>",
@@ -219,6 +227,10 @@ npm install font-awesome --save-dev
         type: Function,
         default: null
       },
+      onImageAdd: {
+        type: Function,
+        default: null
+      }
     },
     data() {
       return {
@@ -226,7 +238,8 @@ npm install font-awesome --save-dev
         i_v_toolbar: (() => this.toolbar)(),
         i_v_fullscreen: (() => this.fullscreen)(),
         i_v_autofocus: (() => this.autofocus ? 'autofocus' : null)(),
-        i_v_showPopup: false,
+        i_v_showImagePopup: false,
+        i_v_showPopupOverlay: false,
         // props 文本
         i_v_value: "",
         i_v_html: "",
@@ -266,7 +279,7 @@ npm install font-awesome --save-dev
       i_v_history_index: function (val, oldVal) {
         let i_vm = this;
         if (i_vm.i_v_history_index > 20) {
-          i_vm.i_v_history_index.shift()
+          i_vm.i_v_history.shift()
           i_vm.i_v_history_index = i_vm.i_v_history_index - 1
         }
         i_vm.i_v_value = i_vm.i_v_history[i_vm.i_v_history_index]
@@ -279,7 +292,16 @@ npm install font-awesome --save-dev
     },
     methods: {
       // 工具栏按钮事件
-      $i_t_b() {
+      $i_t_insertImage() {
+        this.i_m_showImagePopup();
+      },
+      $i_t_insertTable() {
+        this.i_v_value = insertTextAtCaret(this.$refs.mTextarea, {prefix: "", subfix: "", str: "\r|A|B|C|\r|:--|:--:|--:|\r|1|2|3|\r"});
+      },
+      $i_t_insertCode() {
+        this.i_v_value = insertTextAtCaret(this.$refs.mTextarea, {prefix: "\r```", subfix: "\r```", str: "java\r"});
+      },
+      $i_t_insertB() {
         this.i_v_value = insertTextAtCaret(this.$refs.mTextarea, {prefix: "**", subfix: "**", str: ""});
       },
       $i_t_undo() {
@@ -288,21 +310,36 @@ npm install font-awesome --save-dev
       $i_t_redo() {
         this.$i_e_redo()
       },
-      $i_t_image() {
-        this.i_v_showPopup = false;
-        this.i_v_value = insertTextAtCaret(this.$refs.mTextarea, {prefix: "![](", subfix: ")", str: ""});
-      },
       $i_t_save() {
         this.$i_e_save()
       },
       $i_t_fullscreen(fullscreen) {
         this.i_v_fullscreen = !this.i_v_fullscreen
       },
-      $i_t_cancelImage() {
-        this.i_v_showPopup = false;
+      // 图片相关
+      $i_t_imageLink() {
+        this.i_v_value = insertTextAtCaret(this.$refs.mTextarea, {prefix: "![图片描述](", subfix: ")", str: ""});
+        this.i_m_hideImagePopup();
       },
-      $i_t_imageSelected($event) {
-
+      $i_t_imageUpload($e) {
+        let img = $e.target.files[0];
+        let type = img.type;//文件的类型，判断是否是图片
+        let size = img.size;//文件的大小，判断图片的大小
+        if ('image/gif, image/jpeg, image/png, image/jpg'.indexOf(type) == -1) {
+          alert('请选择我们支持的图片格式！');
+          return false;
+        }
+        if (size > 3145728) {
+          alert('请选择3M以内的图片！');
+          return false;
+        }
+        // 这里实现上传逻辑，上传完需要调用i_m_insertImgUrl(url)插入
+        if (this.onImageAdd) {
+          this.onImageAdd(this, img)
+        }
+      },
+      $i_t_cancelImage() {
+        this.i_m_hideImagePopup();
       },
       // 快捷键事件
       $i_e_save() {
@@ -339,6 +376,9 @@ npm install font-awesome --save-dev
       $i_e_unInsertTab() {
         this.i_v_value = unInsertTab(this.$refs.mTextarea);
       },
+      $i_e_exitFullscreen() {
+        this.i_v_fullscreen = false;
+      },
       // 其它事件
       $i_e_editScroll($e) {
         let ratio = this.$refs.mTextarea.scrollTop / (this.$refs.mTextarea.scrollHeight - this.$refs.mTextarea.offsetHeight);
@@ -373,7 +413,9 @@ npm install font-awesome --save-dev
             // with the image pasting process
             $e.preventDefault()
             var oFile = item.getAsFile();
-            console.info(oFile)
+            if (this.onImageAdd) {
+              this.onImageAdd(this, oFile)
+            }
           }
         }
       },
@@ -387,6 +429,27 @@ npm install font-awesome --save-dev
         i_vm.i_v_history.push(i_vm.i_v_value)
         i_vm.i_v_history_index = i_vm.i_v_history.length - 1
       },
+      i_m_showImagePopup() {
+        this.i_v_showImagePopup = true;
+        this.i_m_showPopupOverlay();
+      },
+      i_m_hideImagePopup() {
+        this.i_v_showImagePopup = false;
+        this.i_m_hidePopupOverlay();
+      },
+      i_m_showPopupOverlay() {
+        this.i_v_showPopupOverlay = true
+      },
+      i_m_hidePopupOverlay() {
+        this.i_v_showPopupOverlay = false
+      },
+      i_m_insertImgUrl(url) {
+        this.i_m_hideImagePopup();
+        let prefix = "![";
+        let subfix = "](" + url + ")\n";
+        let str = "图片描述";
+        this.i_v_value = insertTextAtCaret(this.$refs.mTextarea, {prefix: prefix, subfix: subfix, str: str});
+      }
     },
     mounted() {
       var $vm = this;
@@ -399,9 +462,16 @@ npm install font-awesome --save-dev
       // Override function
       renderer.heading = function (text, level) {
         var escapedText = text;//.toLowerCase().replace(/[^\w]+/g, '-');
-
         return `<h${level}><a id="${escapedText}" href="#"></a>${text}</h${level}>`;
       };
+      renderer.image = function (href, title, text) {
+        let img = `<div style="text-align: center;"><img src="${href}" style="display:  block;margin: 0px auto;"></div>`
+        if (text) {
+          img = `<div style="text-align: center;"><img src="${href}" alt="${text}" style="display:  block;margin: 0px auto;"><div style="display: inline-block;padding: 5px 10px;border-bottom: 1px solid #d9d9d9;color: #999;">${text}</div></div>`
+        }
+        //return `<img src="${href}" alt="${text}" style="display:block;margin: 0 auto"/>`;
+        return img;
+      }
 
       Marked.setOptions({
         gfm: true,

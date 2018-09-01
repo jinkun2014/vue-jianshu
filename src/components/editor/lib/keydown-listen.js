@@ -47,7 +47,8 @@ const KEY_CODE = {
   _THREE: 51,
   _FOUR: 52,
   _FIVE: 53,
-  _SIX: 54
+  _SIX: 54,
+  ESC: 27
 };
 export const keydownListen = ($vm) => {
   $vm.$el.addEventListener('keydown', function (e) {
@@ -84,6 +85,12 @@ export const keydownListen = ($vm) => {
           // TAB
           e.preventDefault()
           $vm.$i_e_insertTab()
+          break;
+        }
+        case KEY_CODE.ESC: {
+          // ESC
+          e.preventDefault()
+          $vm.$i_e_exitFullscreen()
           break;
         }
         // case KEY_CODE.ENTER: {

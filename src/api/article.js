@@ -63,7 +63,7 @@ const content = {
 const seq = {
   p: ['post,' + preUrlPath + '/seq'],//暂时没用留作权限控制使用
   r: (params) => {
-    return instance.post(preUrlPath + '/seq',params);
+    return instance.post(preUrlPath + '/seq', params);
   }
 }
 
@@ -83,13 +83,25 @@ const publish = {
 const comment = {
   p: ['put,' + preUrlPath + '/{id}/comment/{status}'],//暂时没用留作权限控制使用
   r: (id, status, params) => {
-    return instance.put(preUrlPath + '/' + id + '/comment/' + status,Qs.stringify(params), {
+    return instance.put(preUrlPath + '/' + id + '/comment/' + status, Qs.stringify(params), {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded'
       }
     });
   }
 }
+
+//上传图片
+const imgUpload = {
+  p: ['post,' +  '/blog/attachment/{id}/upload'],//暂时没用留作权限控制使用
+  r: (id, params) => {
+    return instance.post('/blog/attachment/'+id+'/upload', params, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      },
+    })
+  }
+};
 
 export {
   save,
@@ -100,5 +112,6 @@ export {
   content,
   seq,
   publish,
-  comment
+  comment,
+  imgUpload
 }
