@@ -406,7 +406,7 @@
       },
       onCategoryDel(id) {
         let vm = this;
-        vm.$confirm('此操作将永久删除该文件, 是否继续?', '提示', {
+        vm.$confirm('此操作将永久删除该文集,并删除该文集下的所有文章, 是否继续?', '提示', {
           confirmButtonText: '确定',
           cancelButtonText: '取消',
           type: 'warning'
@@ -560,6 +560,10 @@
             vm.article.listLoading = false;
           })
           .catch(util.catchError)
+          .catch(e => {
+            vm.article.saving = false;
+            vm.article.listLoading = false;
+          })
       },
       onArticleClick(a) {
         let vm = this;

@@ -125,7 +125,7 @@ npm install font-awesome --save-dev
             },
             {
               text: "<i class=\"fa fa-bold\"></i>",
-              title: "粗体",
+              title: "粗体(ctrl+b)",
               float: "left",
               enabled: true,
               callback: (($vm, index) => $vm.$i_t_insertB())
@@ -168,7 +168,7 @@ npm install font-awesome --save-dev
             },
             {
               text: "保存",
-              title: "保存",
+              title: "保存(ctrl+s)",
               float: "right",
               enabled: true,
               callback: (($vm, index) => $vm.$i_t_save())
@@ -383,7 +383,9 @@ npm install font-awesome --save-dev
       $i_e_editScroll($e) {
         let ratio = this.$refs.mTextarea.scrollTop / (this.$refs.mTextarea.scrollHeight - this.$refs.mTextarea.offsetHeight);
         let height = ratio * (this.$refs.showPanel.scrollHeight - this.$refs.showPanel.offsetHeight);
-        this.$refs.showPanel.scrollTop = height;
+        if (Math.abs(this.$refs.showPanel.scrollTop - height) < 100) {
+          this.$refs.showPanel.scrollTop = height;
+        }
       },
       $i_e_in($e) {
         if (this.onFocus) {
@@ -472,7 +474,6 @@ npm install font-awesome --save-dev
         //return `<img src="${href}" alt="${text}" style="display:block;margin: 0 auto"/>`;
         return img;
       }
-
       Marked.setOptions({
         gfm: true,
         breaks: true,
