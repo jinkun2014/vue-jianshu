@@ -131,7 +131,7 @@
                         size="medium"
                         style="color: #333;width:100%;text-align: left"
                         @click="onArticlePublish(1)">
-                        发布文章
+                        {{article.currentArticle.status==1?'发布更新':'发布文章'}}
                       </el-button>
                     </el-dropdown-item>
                     <el-dropdown-item v-if="article.currentArticle.status!=0">
@@ -344,14 +344,28 @@
       },
       "category.currentCategory.id"() {
         let vm = this;
-        if (vm.category.currentCategory.id) {
+        if (vm.category.currentCategory.id != 0) {
           vm.loadArticleList(vm.category.currentCategory.id)
+        } else {
+          vm.article.articles = [];
+          vm.article.currentArticle.id = 0;
         }
       },
       "article.currentArticle.id"() {
         let vm = this;
         if (vm.article.currentArticle.id != 0) {
           vm.loadArticleContent(vm.article.currentArticle.id)
+        } else {
+          vm.article.currentArticle =
+            {
+              id: 0,
+              title: "",
+              content: "",
+              html: "",
+              tags: "",
+              status: 0,
+              comment: 0
+            }
         }
       },
       "article.saving": function (val, oldVal) {
@@ -540,6 +554,16 @@
       },
       onArticleAddClick(atBottom) {
         let vm = this;
+
+        // 判断是否选择分类
+        if (vm.category.currentCategory.id == 0) {
+          vm.$message({
+            type: 'warn',
+            message: '请先选择所属文集！'
+          });
+          return;
+        }
+
         var params = {
           categoryId: vm.category.currentCategory.id,
           title: new Date().toLocaleDateString().replace('\/', '-').replace('\/', '-'),

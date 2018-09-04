@@ -52,10 +52,11 @@ npm install font-awesome --save-dev
         </div>
       </div>
       <div ref="showPanel" class="right" :style="{display:i_v_fullscreen?'block':'none'}">
-        <div
-          class="markdown-body"
-          style="padding: 15px;box-sizing: border-box;height: 100%"
-          v-html="i_v_html">
+        <div style="height: 100%">
+          <div class="markdown-body"
+               style="padding: 15px 15px 40px 15px;;box-sizing: border-box;"
+               v-html="i_v_html">
+          </div>
         </div>
       </div>
     </div>
@@ -474,6 +475,7 @@ npm install font-awesome --save-dev
         //return `<img src="${href}" alt="${text}" style="display:block;margin: 0 auto"/>`;
         return img;
       }
+
       Marked.setOptions({
         gfm: true,
         breaks: true,
@@ -484,18 +486,15 @@ npm install font-awesome --save-dev
         //   return hljs.highlightAuto(code).value;
         // },
         highlight: function (code, lang) {
-          if (lang && hljs.getLanguage(lang)) {
-            return hljs.highlight(lang, code, true).value;
-          } else {
-            return hljs.highlightAuto(code).value;
-          }
+          return hljs.highlightAuto(code).value;
         }
       })
     }
   };
 </script>
 <style>
-  @import "github-markdown.css";
+  @import "css/github-markdown.css";
+  @import "css/atom-one-dark.css";
 
   .markdown-body {
     box-sizing: border-box;
@@ -503,12 +502,39 @@ npm install font-awesome --save-dev
     max-width: 980px;
     margin: 0 auto;
     padding: 45px;
+    font-family: -apple-system, SF UI Text, Arial, PingFang SC, Hiragino Sans GB, Microsoft YaHei, WenQuanYi Micro Hei, sans-serif;
   }
 
   @media (max-width: 767px) {
     .markdown-body {
       padding: 15px;
     }
+  }
+
+  .markdown-body blockquote {
+    padding: 0.8em 1em;
+    background-color: #f6f8fa;
+    border-left: .25em solid #cf2730;
+    color: #000 !important;
+  }
+
+  .markdown-body a {
+    color: #555 !important;
+    outline: 0;
+    text-decoration: none !important;
+    border-bottom: 1px solid #999;
+  }
+
+  .markdown-body a:hover {
+    border-bottom: 1px solid #000;
+  }
+
+  .markdown-body pre{
+    display: block;
+    overflow-x: auto;
+    padding: 1em;
+    color: #abb2bf;
+    background: #282c34
   }
 </style>
 <style rel="stylesheet/scss" lang="scss" scoped>
@@ -664,7 +690,7 @@ npm install font-awesome --save-dev
     padding: 0;
     -webkit-transition: all 0.2s linear 0s;
     transition: all 0.2s linear 0s;
-    background: #fbfbfb;
+    background: #fcfaf2;
   }
 
   .md-panel .single-edit {
