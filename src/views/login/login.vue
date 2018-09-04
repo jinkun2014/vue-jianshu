@@ -69,7 +69,7 @@
         vm.isBtnLoading = true;
 
         let loginParams = {loginName: vm.user.username, pass: vm.user.password};
-        login.requestLogin(loginParams)
+        login.login(loginParams)
           .then(data => {
             vm.isBtnLoading = false;
             if (data) {

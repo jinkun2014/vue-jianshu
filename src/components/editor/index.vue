@@ -536,6 +536,10 @@ npm install font-awesome --save-dev
     color: #abb2bf;
     background: #282c34
   }
+
+  .markdown-body table {
+    display: table;
+  }
 </style>
 <style rel="stylesheet/scss" lang="scss" scoped>
 

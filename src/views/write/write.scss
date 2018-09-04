@@ -1,3 +1,18 @@
+.setting {
+  position: fixed;
+  bottom: 0;
+  height: 50px;
+  line-height: 50px;
+  font-size: 15px;
+  width: 16.6%;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  z-index: 150;
+  background-color: #404040;
+}
+
 .category-list {
   height: 100%;
   list-style: none;

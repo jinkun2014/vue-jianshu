@@ -85,6 +85,24 @@
             </draggable>
           </ul>
         </div>
+        <div class="setting">
+          <el-dropdown
+            @command="handleCommand"
+            trigger="click"
+            size="medium">
+              <span style="margin-left: 10px;color: #fff;cursor: pointer;font-size: 16px">
+                <i class="fa fa-bars"></i> 设置
+              </span>
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item>
+                设置
+              </el-dropdown-item>
+              <el-dropdown-item command="logout" divided>
+                退出
+              </el-dropdown-item>
+            </el-dropdown-menu>
+          </el-dropdown>
+        </div>
         <!-- 编辑文集 -->
         <el-dialog title="请输入新文集名" :visible.sync="category.editDialogShow" width="20%">
           <el-form :model="category.form">
@@ -171,7 +189,7 @@
             </template>
           </draggable>
           <li class="footer" @click="onArticleAddClick(true)">
-            <i class="el-icon-edit"></i>
+            <i class="fa fa-plus"></i>
             <span class="text">在下方新建文章</span>
           </li>
         </ul>
@@ -224,6 +242,7 @@
   import editor from '../../components/editor'
 
   import * as util from '../../assets/util'
+  import * as login from '../../api/login';
   // 分类
   import * as category from '../../api/category'
   // 文章
@@ -558,8 +577,9 @@
         // 判断是否选择分类
         if (vm.category.currentCategory.id == 0) {
           vm.$message({
-            type: 'warn',
-            message: '请先选择所属文集！'
+            type: 'warning',
+            message: '请先选择所属文集！',
+            duration: 600
           });
           return;
         }
@@ -754,6 +774,19 @@
       imgDel(pos, $file) {
         console.info(pos + "-" + $file)
       },
+      handleCommand(command) {
+        if ("logout" === command) {
+          this.onLogout();
+        }
+      },
+      onLogout() {
+        let vm = this;
+        login.logout()
+          .then(data => {
+            vm.$router.push({path: "/login"});
+          })
+          .catch(util.catchError)
+      }
     },
     created() {
       this.loadCategoryList();
