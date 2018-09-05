@@ -206,7 +206,7 @@
         </el-row>
         <el-row>
           <input type="text" class="title" spellcheck="false" v-model="article.currentArticle.title"/>
-          <input type="text" class="tag" placeholder="标签1,标签2" v-model="article.currentArticle.tags"/>
+          <input type="text" class="tag" placeholder="输入标签:tag1,tag2" v-model="article.currentArticle.tags"/>
         </el-row>
         <el-row style="height: calc(100% - 64px);">
           <!--<mdeditor-->
