@@ -8,5 +8,10 @@ export default [
     path: '/write',
     name: '写文章',
     component: (resolve) => require(['../views/write/write.vue'], resolve),
+  },
+  {
+    path: '/history',
+    name: '查看历史',
+    component: (resolve) => require(['../views/history/history.vue'], resolve),
   }
 ]

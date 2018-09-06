@@ -175,6 +175,15 @@
                         type="text"
                         size="medium"
                         style="color: #333;width:100%;text-align: left"
+                        @click="onCheckHistory(a.id)">
+                        查看历史
+                      </el-button>
+                    </el-dropdown-item>
+                    <el-dropdown-item>
+                      <el-button
+                        type="text"
+                        size="medium"
+                        style="color: #333;width:100%;text-align: left"
                         @click="onArticleDel(a.id)">
                         删除文章
                       </el-button>
@@ -219,6 +228,7 @@
           <!--style="height: 100%"/>-->
           <editor
             v-model="article.currentArticle.content"
+            model="edit"
             :onFocus="onArticleFocus"
             :onChange="onArticleChange"
             :onSave="onArticleSave"
@@ -255,7 +265,8 @@
     },
     data() {
       return {
-        vm: this,
+        localCategoryId: 0,//缓存当前分类
+        localArticleId: 0,//缓存当前文章
         editor: {
           index: -1,
           // 自定义按钮
@@ -361,8 +372,9 @@
           vm.category.form.name = "";
         }
       },
-      "category.currentCategory.id"() {
+      "category.currentCategory.id"(val, oldVal) {
         let vm = this;
+        vm.localCategoryId = val;
         if (vm.category.currentCategory.id != 0) {
           vm.loadArticleList(vm.category.currentCategory.id)
         } else {
@@ -370,8 +382,9 @@
           vm.article.currentArticle.id = 0;
         }
       },
-      "article.currentArticle.id"() {
+      "article.currentArticle.id"(val, oldVal) {
         let vm = this;
+        vm.localArticleId = val;
         if (vm.article.currentArticle.id != 0) {
           vm.loadArticleContent(vm.article.currentArticle.id)
         } else {
@@ -406,9 +419,16 @@
         vm.category.listLoading = true;
         category.list.r()
           .then(data => {
-            vm.category.categories = data;
-            if (vm.category.categories.length > 0) {
-              vm.onCategoryClick(vm.category.categories[0]);
+            if (data && data.length > 0) {
+              vm.category.categories = data;
+              if (vm.localCategoryId == 0) {
+                vm.onCategoryClick(data[0]);
+              } else {
+                vm.onCategoryClick(data.find(x => x.id == vm.localCategoryId))
+              }
+            } else {
+              vm.category.categories = []
+              vm.article.articles = []
             }
             vm.category.listLoading = false;
           })
@@ -524,10 +544,15 @@
         vm.article.listLoading = true;
         article.list.r(categoryId)
           .then(data => {
-            vm.article.articles = data;
-            if (vm.article.articles.length > 0) {
-              vm.onArticleClick(vm.article.articles[0])
+            if (data && data.length > 0) {
+              vm.article.articles = data;
+              if (vm.localArticleId == 0) {
+                vm.onArticleClick(data[0])
+              } else {
+                vm.onArticleClick(data.find(x => x.id == vm.localArticleId))
+              }
             } else {
+              vm.article.articles = []
               vm.onArticleClick({
                 id: 0,
                 title: "",
@@ -779,6 +804,9 @@
           this.onLogout();
         }
       },
+      onCheckHistory(id) {
+        this.$router.push({path: '/history', query: {categoryId: this.localCategoryId, articleId: this.localArticleId}});
+      },
       onLogout() {
         let vm = this;
         login.logout()
@@ -789,6 +817,14 @@
       }
     },
     created() {
+      let cId = this.$router.currentRoute.query.categoryId;
+      if (cId) {
+        this.localCategoryId = cId;
+      }
+      let aId = this.$router.currentRoute.query.articleId;
+      if (aId) {
+        this.localArticleId = aId
+      }
       this.loadCategoryList();
     }
   }

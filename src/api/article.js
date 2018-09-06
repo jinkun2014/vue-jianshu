@@ -93,15 +93,35 @@ const comment = {
 
 //上传图片
 const imgUpload = {
-  p: ['post,' +  '/blog/attachment/{id}/upload'],//暂时没用留作权限控制使用
+  p: ['post,' + '/blog/attachment/{id}/upload'],//暂时没用留作权限控制使用
   r: (id, params) => {
-    return instance.post('/blog/attachment/'+id+'/upload', params, {
+    return instance.post('/blog/attachment/' + id + '/upload', params, {
       headers: {
         'Content-Type': 'multipart/form-data'
       },
     })
   }
 };
+
+//查询历史
+const historyList = {
+  p: ['get,' + preUrlPath + '/{id}/content/list'],//暂时没用留作权限控制使用
+  r: (id, params) => {
+    return instance.get(preUrlPath + '/' + id + '/content/list', {params})
+  }
+}
+
+//恢复版本
+const revert = {
+  p: ['put,' + preUrlPath + '/{id}/revert'],//暂时没用留作权限控制使用
+  r: (id, params) => {
+    return instance.put(preUrlPath + '/' + id + '/revert', Qs.stringify(params), {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }
+    });
+  }
+}
 
 export {
   save,
@@ -113,5 +133,7 @@ export {
   seq,
   publish,
   comment,
-  imgUpload
+  imgUpload,
+  historyList,
+  revert
 }

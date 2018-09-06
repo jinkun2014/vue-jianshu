@@ -7,7 +7,7 @@ npm install font-awesome --save-dev
 -->
 <template>
   <div class="md" :class="i_v_fullscreen?'fullscreen':''">
-    <div class="md-top">
+    <div class="md-top" v-if="model != 'preview'">
       <template v-for="(tool, index) in i_v_toolbar">
         <span
           class="op-btn"
@@ -33,25 +33,29 @@ npm install font-awesome --save-dev
       <!--</span>-->
       <!--</div>-->
     </div>
-    <div class="md-panel">
-      <div class="left" :class="i_v_fullscreen?'':'single-edit'">
+    <div class="md-panel" :class="{'no-top':model==='preview'}">
+      <div class="left"
+           :class="{'single':model==='edit'&&!i_v_fullscreen}"
+           :style="{display:model==='preview'?'none':'block'}">
         <div class="auto-textarea-wrapper">
             <textarea
-              class="auto-textarea-input"
+              class="auto-textarea-input no-border no-resize"
               spellcheck="false"
               ref="mTextarea"
               v-model="i_v_value"
               :autofocus="i_v_autofocus"
               :placeholder="placeholder"
               :style="{fontSize: fontSize , lineHeight: lineHeight}"
-              :class="{'no-border': !border , 'no-resize': !resize}"
               @focus="$i_e_in"
               @blur="$i_e_out"
               @scroll="$i_e_editScroll"
               @paste="$i_e_paste"/>
         </div>
       </div>
-      <div ref="showPanel" class="right" :style="{display:i_v_fullscreen?'block':'none'}">
+      <div
+        ref="showPanel" class="right"
+        :class="{'single':model==='preview'}"
+        :style="{display:model==='preview'||i_v_fullscreen?'block':'none'}">
         <div style="height: 100%">
           <div class="markdown-body"
                style="padding: 15px 15px 40px 15px;;box-sizing: border-box;"
@@ -178,19 +182,16 @@ npm install font-awesome --save-dev
         }
       },
       // 编辑框
+      model: {
+        type: String,
+        default: "edit" // edit:编辑模式|preview:预览模式(没有toolbar)
+      },
+      // 编辑框
       autofocus: {
         type: Boolean,
         default: false
       },
       fullscreen: {
-        type: Boolean,
-        default: false
-      },
-      border: {
-        type: Boolean,
-        default: false
-      },
-      resize: {
         type: Boolean,
         default: false
       },
@@ -242,8 +243,8 @@ npm install font-awesome --save-dev
         i_v_showImagePopup: false,
         i_v_showPopupOverlay: false,
         // props 文本
-        i_v_value: "",
-        i_v_html: "",
+        i_v_value: (() => this.value)(),
+        i_v_html: (() => Marked(this.value))(),
         // 历史记录
         i_v_history_init: false,
         i_v_history: [],
@@ -529,7 +530,7 @@ npm install font-awesome --save-dev
     border-bottom: 1px solid #000;
   }
 
-  .markdown-body pre{
+  .markdown-body pre {
     display: block;
     overflow-x: auto;
     padding: 1em;
@@ -542,14 +543,6 @@ npm install font-awesome --save-dev
   }
 </style>
 <style rel="stylesheet/scss" lang="scss" scoped>
-
-  .left {
-    float: left;
-  }
-
-  .right {
-    float: right;
-  }
 
   .md {
     height: 100%;
@@ -579,6 +572,14 @@ npm install font-awesome --save-dev
     border-bottom: 0.1px #eee solid;
     border-top: 0.1px #eee solid;
     padding: 0 10px;
+  }
+
+  .md-top .left {
+    float: left;
+  }
+
+  .md-top .right {
+    float: right;
   }
 
   .md-top .top-left-item, .md-top .top-right-item {
@@ -670,6 +671,10 @@ npm install font-awesome --save-dev
     overflow: hidden;
   }
 
+  .no-top {
+    height: 100%;
+  }
+
   .md-panel .left {
     webkit-box-flex: 0;
     -webkit-flex: 0 0 50%;
@@ -697,7 +702,7 @@ npm install font-awesome --save-dev
     background: #fcfaf2;
   }
 
-  .md-panel .single-edit {
+  .md-panel .single {
     width: 100%;
     -webkit-box-flex: 0;
     -webkit-flex: 0 0 100%;
