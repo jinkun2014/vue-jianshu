@@ -188,17 +188,20 @@
                       <el-popover
                         placement="left"
                         width="200"
-                        trigger="hover">
-                        <el-table :data="category.categories" :show-header="false"
-                                  @row-click="onMoveCategory">
+                        trigger="hover"
+                        v-model="article.categoryPopover">
+                        <el-table
+                          :data="category.categories"
+                          :show-header="false"
+                          max-height="400"
+                          @row-click="onMoveCategory">
                           <el-table-column prop="name"></el-table-column>
                         </el-table>
                         <el-button
                           slot="reference"
                           type="text"
                           size="medium"
-                          style="color: #333;width:100%;text-align: left"
-                          @click="onCheckHistory(a.id)">
+                          style="color: #333;width:100%;text-align: left">
                           <i class="fa fa-chevron-left"></i> 移动到
                         </el-button>
                       </el-popover>
@@ -289,8 +292,6 @@
     },
     data() {
       return {
-        localCategoryId: 0,//缓存当前分类
-        localArticleId: 0,//缓存当前文章
         editor: {
           index: -1,
           // 自定义按钮
@@ -378,7 +379,8 @@
             comment: 0
           },
           saving: false,
-          timeoutSaveId: -1
+          timeoutSaveId: -1,
+          categoryPopover: false
         },
       }
     },
@@ -398,7 +400,6 @@
       },
       "category.currentCategory.id"() {
         let vm = this;
-        vm.localCategoryId = vm.category.currentCategory.id;
         if (vm.category.currentCategory.id != 0) {
           vm.loadArticleList(vm.category.currentCategory.id)
         } else {
@@ -408,7 +409,6 @@
       },
       "article.currentArticle.id"() {
         let vm = this;
-        vm.localArticleId = vm.article.currentArticle.id;
         if (vm.article.currentArticle.id != 0) {
           vm.loadArticleContent(vm.article.currentArticle.id)
         } else {
@@ -445,10 +445,10 @@
           .then(data => {
             if (data && data.length > 0) {
               vm.category.categories = data;
-              if (vm.localCategoryId == 0) {
+              if (vm.category.currentCategory.id == 0) {
                 vm.onCategoryClick(data[0]);
               } else {
-                vm.onCategoryClick(data.find(x => x.id == vm.localCategoryId))
+                vm.onCategoryClick(data.find(x => x.id == vm.category.currentCategory.id))
               }
             } else {
               vm.category.categories = []
@@ -570,7 +570,7 @@
           .then(data => {
             if (data && data.length > 0) {
               vm.article.articles = data;
-              let article = data.find(x => x.id == vm.localArticleId);
+              let article = data.find(x => x.id == vm.article.currentArticle.id);
               if (!article) {
                 article = data[0];
               }
@@ -829,15 +829,17 @@
         }
       },
       onCheckHistory(id) {
-        this.$router.push({path: '/history', query: {categoryId: this.localCategoryId, articleId: this.localArticleId}});
+        this.$router.push({path: '/history', query: {categoryId: this.category.currentCategory.id, articleId: this.article.currentArticle.id}});
       },
       onMoveCategory(row, event, column) {
         let vm = this;
         if (row.id == vm.category.currentCategory.id) {
+          vm.article.categoryPopover = false;
           return;
         }
         article.moveCategory.r(vm.article.currentArticle.id, row.id)
           .then(data => {
+            vm.article.categoryPopover = false;
             vm.loadArticleList(vm.category.currentCategory.id)
           })
           .catch(util.catchError)
@@ -854,11 +856,11 @@
     created() {
       let cId = this.$router.currentRoute.query.categoryId;
       if (cId) {
-        this.localCategoryId = cId;
+        this.category.currentCategory.id = cId;
       }
       let aId = this.$router.currentRoute.query.articleId;
       if (aId) {
-        this.localArticleId = aId
+        this.article.currentArticle.id = aId
       }
       this.loadCategoryList();
     }
