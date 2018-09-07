@@ -123,6 +123,18 @@ const revert = {
   }
 }
 
+//恢复版本
+const moveCategory = {
+  p: ['put,' + preUrlPath + '/{id}/category/{categoryId}/move'],//暂时没用留作权限控制使用
+  r: (id, categoryId, params) => {
+    return instance.put(preUrlPath + '/' + id + '/category/' + categoryId + '/move', Qs.stringify(params), {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }
+    });
+  }
+}
+
 export {
   save,
   update,
@@ -135,5 +147,6 @@ export {
   comment,
   imgUpload,
   historyList,
-  revert
+  revert,
+  moveCategory
 }

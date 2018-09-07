@@ -149,7 +149,12 @@
                         size="medium"
                         style="color: #333;width:100%;text-align: left"
                         @click="onArticlePublish(1)">
-                        {{article.currentArticle.status==1?'发布更新':'发布文章'}}
+                        <template v-if="article.currentArticle.status==1">
+                          <i class="fa fa-refresh"></i> 发布更新
+                        </template>
+                        <template v-else>
+                          <i class="fa fa-check"></i> 发布文章
+                        </template>
                       </el-button>
                     </el-dropdown-item>
                     <el-dropdown-item v-if="article.currentArticle.status!=0">
@@ -158,7 +163,7 @@
                         size="medium"
                         style="color: #333;width:100%;text-align: left"
                         @click="onArticlePublish(0)">
-                        设为私密
+                        <i class="fa fa-lock"></i> 设为私密
                       </el-button>
                     </el-dropdown-item>
                     <el-dropdown-item>
@@ -167,7 +172,7 @@
                         size="medium"
                         style="color: #333;width:100%;text-align: left"
                         @click="onArticleComment(article.currentArticle.comment!=0?0:1)">
-                        {{article.currentArticle.comment!=0?'展示评论':'关闭评论'}}
+                        <i class="fa fa-comment"></i> {{article.currentArticle.comment!=0?'展示评论':'关闭评论'}}
                       </el-button>
                     </el-dropdown-item>
                     <el-dropdown-item>
@@ -176,8 +181,27 @@
                         size="medium"
                         style="color: #333;width:100%;text-align: left"
                         @click="onCheckHistory(a.id)">
-                        查看历史
+                        <i class="fa fa-clock-o"></i> 查看历史
                       </el-button>
+                    </el-dropdown-item>
+                    <el-dropdown-item>
+                      <el-popover
+                        placement="left"
+                        width="200"
+                        trigger="hover">
+                        <el-table :data="category.categories" :show-header="false"
+                                  @row-click="onMoveCategory">
+                          <el-table-column prop="name"></el-table-column>
+                        </el-table>
+                        <el-button
+                          slot="reference"
+                          type="text"
+                          size="medium"
+                          style="color: #333;width:100%;text-align: left"
+                          @click="onCheckHistory(a.id)">
+                          <i class="fa fa-chevron-left"></i> 移动到
+                        </el-button>
+                      </el-popover>
                     </el-dropdown-item>
                     <el-dropdown-item>
                       <el-button
@@ -185,7 +209,7 @@
                         size="medium"
                         style="color: #333;width:100%;text-align: left"
                         @click="onArticleDel(a.id)">
-                        删除文章
+                        <i class="fa fa-trash"></i> 删除文章
                       </el-button>
                     </el-dropdown-item>
                   </el-dropdown-menu>
@@ -372,9 +396,9 @@
           vm.category.form.name = "";
         }
       },
-      "category.currentCategory.id"(val, oldVal) {
+      "category.currentCategory.id"() {
         let vm = this;
-        vm.localCategoryId = val;
+        vm.localCategoryId = vm.category.currentCategory.id;
         if (vm.category.currentCategory.id != 0) {
           vm.loadArticleList(vm.category.currentCategory.id)
         } else {
@@ -382,9 +406,9 @@
           vm.article.currentArticle.id = 0;
         }
       },
-      "article.currentArticle.id"(val, oldVal) {
+      "article.currentArticle.id"() {
         let vm = this;
-        vm.localArticleId = val;
+        vm.localArticleId = vm.article.currentArticle.id;
         if (vm.article.currentArticle.id != 0) {
           vm.loadArticleContent(vm.article.currentArticle.id)
         } else {
@@ -546,11 +570,11 @@
           .then(data => {
             if (data && data.length > 0) {
               vm.article.articles = data;
-              if (vm.localArticleId == 0) {
-                vm.onArticleClick(data[0])
-              } else {
-                vm.onArticleClick(data.find(x => x.id == vm.localArticleId))
+              let article = data.find(x => x.id == vm.localArticleId);
+              if (!article) {
+                article = data[0];
               }
+              vm.onArticleClick(article)
             } else {
               vm.article.articles = []
               vm.onArticleClick({
@@ -806,6 +830,17 @@
       },
       onCheckHistory(id) {
         this.$router.push({path: '/history', query: {categoryId: this.localCategoryId, articleId: this.localArticleId}});
+      },
+      onMoveCategory(row, event, column) {
+        let vm = this;
+        if (row.id == vm.category.currentCategory.id) {
+          return;
+        }
+        article.moveCategory.r(vm.article.currentArticle.id, row.id)
+          .then(data => {
+            vm.loadArticleList(vm.category.currentCategory.id)
+          })
+          .catch(util.catchError)
       },
       onLogout() {
         let vm = this;
