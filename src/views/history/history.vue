@@ -1,8 +1,8 @@
 <template>
   <el-row style="height: 100%;overflow-y:hidden;">
-    <el-col :span="5" style="height: 100%;">
-      <div style="padding: 5px 18px 5px;text-align: center;z-index: 1000;">
-        <el-button round style="padding: 12px 75px;color:#ec7259;background: transparent;border: 1px solid #ec7259;" @click="back()">返回</el-button>
+    <el-col :span="4" style="height: 100%;">
+      <div style="padding: 15px;text-align: center;">
+        <el-button round style="width: 250px;color:#ec7259;background: transparent;border: 1px solid #ec7259;" @click="back()">返回</el-button>
       </div>
       <ul class="list">
         <template v-for="(x, index) in historyList">
@@ -24,7 +24,7 @@
         </template>
       </ul>
     </el-col>
-    <el-col :span="19" style="height: 100%;">
+    <el-col :span="20" style="height: 100%;">
       <div style="background: #fff;height: 100%;border-left: 1px solid #ccc;">
         <editor
           :value="currentHistory.content"
