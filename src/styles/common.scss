@@ -5,3 +5,10 @@ $--color-primary: #ec7259;
 $--font-path: '~element-ui/lib/theme-chalk/fonts';
 
 @import "~element-ui/packages/theme-chalk/src/index";
+
+/*===================全局样式==================*/
+.no-padding {
+  padding: 0px;
+}
+
+/*===================全局样式==================*/

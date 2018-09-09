@@ -103,19 +103,27 @@ const imgUpload = {
   }
 };
 
-//查询历史
+//查询历史列表
 const historyList = {
-  p: ['get,' + preUrlPath + '/{id}/content/list'],//暂时没用留作权限控制使用
+  p: ['get,' + preUrlPath + '/{id}/history/list'],//暂时没用留作权限控制使用
   r: (id, params) => {
-    return instance.get(preUrlPath + '/' + id + '/content/list', {params})
+    return instance.get(preUrlPath + '/' + id + '/history/list', {params})
+  }
+}
+
+//查询历史详情
+const historyContent = {
+  p: ['get,' + preUrlPath + '/{id}/history/{historyId}'],//暂时没用留作权限控制使用
+  r: (id, historyId, params) => {
+    return instance.get(preUrlPath + '/' + id + '/history/' + historyId, {params})
   }
 }
 
 //恢复版本
-const revert = {
-  p: ['put,' + preUrlPath + '/{id}/revert'],//暂时没用留作权限控制使用
-  r: (id, params) => {
-    return instance.put(preUrlPath + '/' + id + '/revert', Qs.stringify(params), {
+const historyRevert = {
+  p: ['put,' + preUrlPath + '/{id}/history/{historyId}/revert'],//暂时没用留作权限控制使用
+  r: (id, historyId) => {
+    return instance.put(preUrlPath + '/' + id + '/history/' + historyId + '/revert', Qs.stringify(params), {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded'
       }
@@ -123,11 +131,31 @@ const revert = {
   }
 }
 
-//恢复版本
+//移动分类
 const moveCategory = {
   p: ['put,' + preUrlPath + '/{id}/category/{categoryId}/move'],//暂时没用留作权限控制使用
   r: (id, categoryId, params) => {
     return instance.put(preUrlPath + '/' + id + '/category/' + categoryId + '/move', Qs.stringify(params), {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }
+    });
+  }
+}
+
+// 回收站列表
+const trashList = {
+  p: ['get,' + preUrlPath + '/trash/list'],//暂时没用留作权限控制使用
+  r: (params) => {
+    return instance.get(preUrlPath + '/trash/list', {params})
+  }
+}
+
+// 回收站恢复
+const trashRevert = {
+  p: ['put,' + preUrlPath + '/{id}/trash/revert'],//暂时没用留作权限控制使用
+  r: (id, params) => {
+    return instance.put(preUrlPath + '/' + id + '/trash/revert', Qs.stringify(params), {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded'
       }
@@ -147,6 +175,9 @@ export {
   comment,
   imgUpload,
   historyList,
-  revert,
-  moveCategory
+  historyContent,
+  historyRevert,
+  moveCategory,
+  trashList,
+  trashRevert
 }

@@ -13,5 +13,10 @@ export default [
     path: '/history',
     name: '查看历史',
     component: (resolve) => require(['../views/history/history.vue'], resolve),
+  },
+  {
+    path: '/trash',
+    name: '回收站',
+    component: (resolve) => require(['../views/trash/trash.vue'], resolve),
   }
 ]

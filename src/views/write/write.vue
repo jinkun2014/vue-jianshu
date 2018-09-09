@@ -66,7 +66,7 @@
                           size="medium"
                           style="color: #333;width:100%;text-align: left"
                           @click="onCategoryEdit(c.id,c.name)">
-                          修改文集
+                          <i class="fa fa-pencil"></i> 修改文集
                         </el-button>
                       </el-dropdown-item>
                       <el-dropdown-item>
@@ -75,7 +75,7 @@
                           size="medium"
                           style="color: #333;width:100%;text-align: left"
                           @click="onCategoryDel(c.id)">
-                          删除文集
+                          <i class="fa fa-trash"></i> 删除文集
                         </el-button>
                       </el-dropdown-item>
                     </el-dropdown-menu>
@@ -86,22 +86,22 @@
           </ul>
         </div>
         <div class="setting">
-          <el-dropdown
-            @command="handleCommand"
+          <el-popover
+            placement="top"
+            width="150"
             trigger="click"
-            size="medium">
-              <span style="margin-left: 10px;color: #fff;cursor: pointer;font-size: 16px">
+            :visible-arrow="false"
+            popper-class="no-padding">
+            <div class="click-item" @click="onTrashClick">
+              <i class="fa fa-trash-o"></i> 回收站
+            </div>
+            <div class="click-item" @click="onLogout">
+              <i class="fa fa-question-circle-o"></i> 退出
+            </div>
+            <span slot="reference" style="margin-left: 10px;color: #fff;cursor: pointer;font-size: 16px">
                 <i class="fa fa-bars"></i> 设置
-              </span>
-            <el-dropdown-menu slot="dropdown">
-              <el-dropdown-item>
-                设置
-              </el-dropdown-item>
-              <el-dropdown-item command="logout" divided>
-                退出
-              </el-dropdown-item>
-            </el-dropdown-menu>
-          </el-dropdown>
+            </span>
+          </el-popover>
         </div>
         <!-- 编辑文集 -->
         <el-dialog title="请输入新文集名" :visible.sync="category.editDialogShow" width="20%">
@@ -189,6 +189,8 @@
                         placement="left"
                         width="200"
                         trigger="hover"
+                        popper-class="no-padding"
+                        :visible-arrow="false"
                         v-model="article.categoryPopover">
                         <el-table
                           :data="category.categories"
@@ -382,6 +384,9 @@
           timeoutSaveId: -1,
           categoryPopover: false
         },
+        // 用于回显
+        aId: 0,
+        cId: 0
       }
     },
     watch: {
@@ -400,6 +405,7 @@
       },
       "category.currentCategory.id"() {
         let vm = this;
+        util.local("currentCategoryId", vm.category.currentCategory.id)
         if (vm.category.currentCategory.id != 0) {
           vm.loadArticleList(vm.category.currentCategory.id)
         } else {
@@ -409,6 +415,7 @@
       },
       "article.currentArticle.id"() {
         let vm = this;
+        util.local("currentArticleId", vm.article.currentArticle.id)
         if (vm.article.currentArticle.id != 0) {
           vm.loadArticleContent(vm.article.currentArticle.id)
         } else {
@@ -445,11 +452,11 @@
           .then(data => {
             if (data && data.length > 0) {
               vm.category.categories = data;
-              if (vm.category.currentCategory.id == 0) {
-                vm.onCategoryClick(data[0]);
-              } else {
-                vm.onCategoryClick(data.find(x => x.id == vm.category.currentCategory.id))
+              let category = data.find(x => x.id == vm.cId);
+              if (!category) {
+                category = data[0];
               }
+              vm.onCategoryClick(category)
             } else {
               vm.category.categories = []
               vm.article.articles = []
@@ -570,7 +577,7 @@
           .then(data => {
             if (data && data.length > 0) {
               vm.article.articles = data;
-              let article = data.find(x => x.id == vm.article.currentArticle.id);
+              let article = data.find(x => x.id == vm.aId);
               if (!article) {
                 article = data[0];
               }
@@ -823,13 +830,8 @@
       imgDel(pos, $file) {
         console.info(pos + "-" + $file)
       },
-      handleCommand(command) {
-        if ("logout" === command) {
-          this.onLogout();
-        }
-      },
       onCheckHistory(id) {
-        this.$router.push({path: '/history', query: {categoryId: this.category.currentCategory.id, articleId: this.article.currentArticle.id}});
+        this.$router.push({path: '/history'});
       },
       onMoveCategory(row, event, column) {
         let vm = this;
@@ -844,6 +846,9 @@
           })
           .catch(util.catchError)
       },
+      onTrashClick() {
+        this.$router.push({path: '/trash'});
+      },
       onLogout() {
         let vm = this;
         login.logout()
@@ -854,13 +859,15 @@
       }
     },
     created() {
-      let cId = this.$router.currentRoute.query.categoryId;
+      let cId = util.local("currentCategoryId")
       if (cId) {
-        this.category.currentCategory.id = cId;
+        // this.category.currentCategory.id = cId;
+        this.cId = cId;
       }
-      let aId = this.$router.currentRoute.query.articleId;
+      let aId = util.local("currentArticleId")
       if (aId) {
-        this.article.currentArticle.id = aId
+        // this.article.currentArticle.id = aId;
+        this.aId = aId;
       }
       this.loadCategoryList();
     }

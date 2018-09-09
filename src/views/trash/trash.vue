@@ -5,20 +5,19 @@
         <el-button round style="width: 250px;color:#ec7259;background: transparent;border: 1px solid #ec7259;" @click="back()">返回</el-button>
       </div>
       <ul class="list">
-        <template v-for="(x, index) in historyList">
-          <li class="item" :class="{active:x.id==currentHistory.id}" @click="onItemClick(x)">
+        <template v-for="(x, index) in trashList">
+          <li class="item" :class="{active:x.id==current.id}" @click="onItemClick(x)">
             <div>
-              <span class="text" style="float: left;text-align: left">
-                {{x.source==0?'公开发布':x.source==1?'发布更新':x.source==2?'自动保存':'版本恢复'}}
+              <span class="text" style="width: 200px;float: left;text-align: left">
+                {{x.title}}
               </span>
               <span
-                v-if="x.id==currentHistory.id"
+                v-if="x.id==current.id"
                 @click="revert(x)"
                 class="text"
                 style="float: right;text-align: right;font-size: 16px;">
-                <i class="fa fa-reply" title="恢复到这个版本" style="color:#42c02e"></i>
+                <i class="fa fa-reply" title="恢复文章" style="color:#42c02e"></i>
               </span>
-              <span class="text" style="float: right;width: 50%;text-align: right;font-size: 14px;margin-right: 10px;">{{x.updateTime}}</span>
             </div>
           </li>
         </template>
@@ -46,53 +45,53 @@
     },
     data() {
       return {
-        articleId: 0,
-        historyList: [
+        trashList: [
           // {
-          //   id: 2,
-          //   source: 1,
-          //   content: "我好",
-          //   updateTime: "2018-09-04 17:52:33"
+          //   id: 96,
+          //   title: "2018-9-9",
+          //   gmtModified: "2018-09-09 12:26:01",
+          //   categoryId: 1
           // },
         ],
-        currentHistory: {
+        current: {
           id: 0,
-          source: 0,
-          updateTime: "2018-09-04 17:52:33"
+          title: "",
+          gmtModified: "",
+          categoryId: 0
         },
         content: ""
       };
     },
     watch: {
-      "currentHistory.id"() {
+      "current.id"() {
         let vm = this;
-        if (vm.currentHistory.id != 0) {
-          vm.loadHistoryContent(vm.currentHistory.id);
+        if (vm.current.id != 0) {
+          vm.loadTrashContent(vm.current.id);
         }
       }
     },
     methods: {
-      loadHistoryList(articleId) {
+      loadTrashList() {
         let vm = this;
-        article.historyList.r(articleId)
+        article.trashList.r()
           .then(data => {
             if (data && data.length > 0) {
-              vm.historyList = data
+              vm.trashList = data
               vm.onItemClick(data[0])
             }
           })
           .catch(util.catchError)
       },
-      loadHistoryContent(historyId) {
+      loadTrashContent(articleId) {
         let vm = this;
-        article.historyContent.r(vm.articleId, historyId)
+        article.content.r(articleId)
           .then(data => {
             vm.content = data.content;
           })
           .catch(util.catchError)
       },
-      onItemClick(history) {
-        this.currentHistory = history;
+      onItemClick(current) {
+        this.current = current;
       },
       back() {
         let vm = this;
@@ -100,8 +99,13 @@
       },
       revert(current) {
         let vm = this;
+
+        // 选中当前分类文章
+        util.local("currentCategoryId", current.categoryId);
+        util.local("currentArticleId", current.id);
+
         if (current) {
-          article.historyRevert.r(vm.articleId, current.id)
+          article.trashRevert.r(current.id)
             .then(data => {
               vm.$router.push({path: "/write"})
               this.$message({
@@ -115,11 +119,7 @@
       }
     },
     created() {
-      let aId = util.local("currentArticleId");
-      if (aId) {
-        this.articleId = aId;
-        this.loadHistoryList(aId);
-      }
+      this.loadTrashList()
     }
   }
 </script>
