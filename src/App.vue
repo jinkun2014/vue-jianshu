@@ -15,7 +15,7 @@
       //登录成功后跳转到指定的路由
       loginDirect(newPath) {
         this.login(() => {
-          this.$router.replace({path: newPath || '/'});
+          this.$router.replace({path: newPath || '/write'});
         });
       },
       logoutDirect() {
