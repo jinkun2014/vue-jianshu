@@ -18,13 +18,16 @@
                 style="float: right;text-align: right;font-size: 16px;">
                 <i class="fa fa-reply" title="恢复到这个版本" style="color:#42c02e"></i>
               </span>
-              <span class="text" style="float: right;width: 50%;text-align: right;font-size: 14px;margin-right: 10px;">{{x.updateTime}}</span>
             </div>
           </li>
         </template>
       </ul>
     </el-col>
-    <el-col :span="20" style="height: 100%;">
+    <el-col :span="20" style="height: 100%;padding-bottom:40px">
+      <div style="background: #fff;border-left: 1px solid #ccc;padding: 0 20px;border-bottom: 1px solid #d9d9d9;height: 60px;line-height: 60px">
+        <span>{{currentHistory.source==0?'公开发布':currentHistory.source==1?'发布更新':currentHistory.source==2?'自动保存':'版本恢复'}}</span>
+        <span style="float: right">{{currentHistory.updateTime}}</span>
+      </div>
       <div style="background: #fff;height: 100%;border-left: 1px solid #ccc;">
         <editor
           :value="content"

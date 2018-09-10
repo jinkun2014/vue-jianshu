@@ -23,7 +23,11 @@
         </template>
       </ul>
     </el-col>
-    <el-col :span="20" style="height: 100%;">
+    <el-col :span="20" style="height: 100%;padding-bottom: 40px">
+      <div style="background: #fff;border-left: 1px solid #ccc;padding: 0 20px;border-bottom: 1px solid #d9d9d9;height: 60px;line-height: 60px">
+        <span>{{current.title}}</span>
+        <span style="float: right">{{current.gmtModified}}</span>
+      </div>
       <div style="background: #fff;height: 100%;border-left: 1px solid #ccc;">
         <editor
           :value="content"
