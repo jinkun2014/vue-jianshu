@@ -5,8 +5,8 @@
       <div style="background: #404040;height: 100%;overflow:auto;"
            v-loading="category.listLoading">
         <!-- 回到首页 -->
-        <div style="padding: 15px;text-align: center;">
-          <el-button round style="width: 250px;color:#ec7259;background: transparent;border: 1px solid #ec7259;">回首页</el-button>
+        <div style="padding: 15px 0;text-align: center;">
+          <el-button round style="width: 80%;color:#ec7259;background: transparent;border: 1px solid #ec7259;">回首页</el-button>
         </div>
         <!-- 新建文集 -->
         <div style="padding: 0 15px;">

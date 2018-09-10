@@ -1,8 +1,8 @@
 <template>
   <el-row style="height: 100%;overflow-y:hidden;">
     <el-col :span="4" style="height: 100%;">
-      <div style="padding: 15px;text-align: center;">
-        <el-button round style="width: 250px;color:#ec7259;background: transparent;border: 1px solid #ec7259;" @click="back()">返回</el-button>
+      <div style="padding: 15px 0;text-align: center;">
+        <el-button round style="width: 80%;color:#ec7259;background: transparent;border: 1px solid #ec7259;" @click="back()">返回</el-button>
       </div>
       <ul class="list">
         <template v-for="(x, index) in trashList">
@@ -123,7 +123,7 @@
     }
   }
 </script>
-<style>
+<style scoped>
   .list {
     height: 100%;
     position: relative;
