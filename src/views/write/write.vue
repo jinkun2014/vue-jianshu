@@ -92,11 +92,14 @@
             trigger="click"
             :visible-arrow="false"
             popper-class="no-padding">
+            <div class="click-item" @click="onExportAll">
+              <i class="fa fa-file-zip-o"></i> 导出
+            </div>
             <div class="click-item" @click="onTrashClick">
               <i class="fa fa-trash-o"></i> 回收站
             </div>
             <div class="click-item" @click="onLogout">
-              <i class="fa fa-question-circle-o"></i> 退出
+              <i class="fa fa-sign-out"></i> 退出
             </div>
             <span slot="reference" style="margin-left: 10px;color: #fff;cursor: pointer;font-size: 16px">
                 <i class="fa fa-bars"></i> 设置
@@ -848,6 +851,9 @@
       },
       onTrashClick() {
         this.$router.push({path: '/trash'});
+      },
+      onExportAll() {
+        window.open("/res/export/all")
       },
       onLogout() {
         let vm = this;
