@@ -8,14 +8,14 @@
         <template v-for="(x, index) in historyList">
           <li class="item" :class="{active:x.id==currentHistory.id}" @click="onItemClick(x)">
             <div>
-              <span class="text" style="float: left;text-align: left">
+              <span class="text" style="float:left;width: 90%;">
                 {{x.source==0?'公开发布':x.source==1?'发布更新':x.source==2?'自动保存':'版本恢复'}}
               </span>
               <span
                 v-if="x.id==currentHistory.id"
                 @click="revert(x)"
                 class="text"
-                style="float: right;text-align: right;font-size: 16px;">
+                style="float: right;">
                 <i class="fa fa-reply" title="恢复到这个版本" style="color:#42c02e"></i>
               </span>
             </div>

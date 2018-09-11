@@ -8,7 +8,7 @@
         <template v-for="(x, index) in trashList">
           <li class="item" :class="{active:x.id==current.id}" @click="onItemClick(x)">
             <div>
-              <span class="text" style="width: 200px;float: left;text-align: left">
+              <span class="text" style="float:left;width: 90%;">
                 {{x.title}}
               </span>
               <span

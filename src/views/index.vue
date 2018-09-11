@@ -17,6 +17,10 @@
       let localUser = util.session('user');
       if (localUser) {
         this.user = localUser;
+
+        if (this.$router.currentRoute.path == "/") {
+          this.$router.push({path: "/write"});
+        }
       } else {
         //跳转到登录页
         this.$router.push({path: "/login", query: {from: this.$router.currentRoute.path}});
