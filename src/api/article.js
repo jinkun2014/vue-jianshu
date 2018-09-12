@@ -37,9 +37,9 @@ const del = {
 
 //查询列表
 const list = {
-  p: ['get,' + preUrlPath + '/category/{id}/list'],//暂时没用留作权限控制使用
+  p: ['get,' + preUrlPath + '/category/{id}/articles'],//暂时没用留作权限控制使用
   r: (categoryId, params) => {
-    return instance.get(preUrlPath + '/category/' + categoryId + '/list', {params})
+    return instance.get(preUrlPath + '/category/' + categoryId + '/articles', {params})
   }
 }
 

@@ -153,10 +153,10 @@
                         style="color: #333;width:100%;text-align: left"
                         @click="onArticlePublish(1)">
                         <template v-if="article.currentArticle.status==1">
-                          <i class="fa fa-refresh"></i> 发布更新
+                          <i class="fa fa-refresh" style="width: 14px;"></i> 发布更新
                         </template>
                         <template v-else>
-                          <i class="fa fa-check"></i> 发布文章
+                          <i class="fa fa-check" style="width: 14px;"></i> 发布文章
                         </template>
                       </el-button>
                     </el-dropdown-item>
@@ -166,7 +166,7 @@
                         size="medium"
                         style="color: #333;width:100%;text-align: left"
                         @click="onArticlePublish(0)">
-                        <i class="fa fa-lock"></i> 设为私密
+                        <i class="fa fa-lock" style="width: 14px;"></i> 设为私密
                       </el-button>
                     </el-dropdown-item>
                     <el-dropdown-item>
@@ -175,7 +175,7 @@
                         size="medium"
                         style="color: #333;width:100%;text-align: left"
                         @click="onArticleComment(article.currentArticle.comment!=0?0:1)">
-                        <i class="fa fa-comment"></i> {{article.currentArticle.comment!=0?'展示评论':'关闭评论'}}
+                        <i class="fa fa-remove" style="width: 14px;"></i> {{article.currentArticle.comment!=0?'展示评论':'关闭评论'}}
                       </el-button>
                     </el-dropdown-item>
                     <el-dropdown-item>
@@ -184,7 +184,7 @@
                         size="medium"
                         style="color: #333;width:100%;text-align: left"
                         @click="onCheckHistory(a.id)">
-                        <i class="fa fa-clock-o"></i> 查看历史
+                        <i class="fa fa-clock-o" style="width: 14px;"></i> 查看历史
                       </el-button>
                     </el-dropdown-item>
                     <el-dropdown-item>
@@ -207,7 +207,7 @@
                           type="text"
                           size="medium"
                           style="color: #333;width:100%;text-align: left">
-                          <i class="fa fa-chevron-left"></i> 移动到
+                          <i class="fa fa-chevron-left" style="width: 14px;"></i> 移动到
                         </el-button>
                       </el-popover>
                     </el-dropdown-item>
@@ -217,14 +217,21 @@
                         size="medium"
                         style="color: #333;width:100%;text-align: left"
                         @click="onArticleDel(a.id)">
-                        <i class="fa fa-trash"></i> 删除文章
+                        <i class="fa fa-trash" style="width: 14px;"></i> 删除文章
                       </el-button>
                     </el-dropdown-item>
                   </el-dropdown-menu>
                 </el-dropdown>
-                <div style="display: block;line-height: 20px;font-size: 12px">
-                  <span>{{a.status==0?'草稿&nbsp;&nbsp;&nbsp;&nbsp;':'已发布'}}</span>
-                  <span style="margin-left: 10px">{{a.comment==0?'评论已展示':'评论已关闭'}}</span>
+                <div style="display: block;line-height: 25px;font-size: 14px">
+                  <template v-if="a.status==0">
+                    <span>草稿&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                  </template>
+                  <template v-else>
+                    <span>已发布</span>
+                    <span style="margin-left: 10px">{{a.comment==0?'评论已展示':'评论已关闭'}}</span>
+                    <span style="margin-left: 10px;color:#ec7259">{{a.historyId?a.historyId!=a.lastestId?'有更新':'':''}}</span>
+                    <span style="margin-left: 10px;color:#ec7259">{{a.top==1?'已置顶':''}}</span>
+                  </template>
                 </div>
               </li>
             </template>
@@ -381,7 +388,9 @@
             html: "",
             tags: "",
             status: 0,
-            comment: 0
+            comment: 0,
+            historyId: 0,
+            lastestId: 0
           },
           saving: false,
           timeoutSaveId: -1,
@@ -740,10 +749,12 @@
           .then(data => {
             vm.article.saving = false;
 
+            vm.article.currentArticle.lastestId = data.lastestId;
+
             this.$message({
               type: 'info',
               message: '保存成功！',
-              duration: 500
+              duration: 1000
             });
           })
           .catch(util.catchError)
@@ -771,7 +782,10 @@
 
         article.publish.r(vm.article.currentArticle.id, status, params)
           .then(data => {
-            vm.article.currentArticle.status = status;
+            vm.article.currentArticle.status = data.status;
+            vm.article.currentArticle.lastestId = data.lastestId;
+            vm.article.currentArticle.historyId = data.historyId;
+
             for (var i = 0; i < vm.article.articles.length; i++) {
               if (vm.article.currentArticle.id == vm.article.articles[i].id) {
                 vm.article.articles[i].status = status;
