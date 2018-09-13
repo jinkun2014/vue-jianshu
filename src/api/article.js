@@ -91,6 +91,19 @@ const comment = {
   }
 }
 
+
+//置顶状态
+const top = {
+  p: ['put,' + preUrlPath + '/{id}/top/{status}'],//暂时没用留作权限控制使用
+  r: (id, status, params) => {
+    return instance.put(preUrlPath + '/' + id + '/top/' + status, Qs.stringify(params), {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }
+    });
+  }
+}
+
 //上传图片
 const imgUpload = {
   p: ['post,' + '/blog/attachment/{id}/upload'],//暂时没用留作权限控制使用
@@ -173,6 +186,7 @@ export {
   seq,
   publish,
   comment,
+  top,
   imgUpload,
   historyList,
   historyContent,

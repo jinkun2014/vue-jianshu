@@ -138,46 +138,77 @@
                              style="float: right;height: 10px;width: 10px;margin-top: -25px;">
                   <el-button type="text" icon="el-icon-setting" style="color:#333;position:absolute;top: -15px;left: -8px"></el-button>
                   <el-dropdown-menu slot="dropdown">
-                    <el-dropdown-item>
-                      <el-button
-                        type="text"
-                        size="medium"
-                        style="color: #333;width:100%;text-align: left">
-                        在新窗口打开
-                      </el-button>
-                    </el-dropdown-item>
-                    <el-dropdown-item>
-                      <el-button
-                        type="text"
-                        size="medium"
-                        style="color: #333;width:100%;text-align: left"
-                        @click="onArticlePublish(1)">
-                        <template v-if="article.currentArticle.status==1">
-                          <i class="fa fa-refresh" style="width: 14px;"></i> 发布更新
-                        </template>
-                        <template v-else>
+                    <!-- 未发布 -->
+                    <template v-if="a.status==0">
+                      <!-- 发布文章 -->
+                      <el-dropdown-item>
+                        <el-button
+                          type="text"
+                          size="medium"
+                          style="color: #333;width:100%;text-align: left"
+                          @click="onArticlePublish(1)">
                           <i class="fa fa-check" style="width: 14px;"></i> 发布文章
-                        </template>
-                      </el-button>
-                    </el-dropdown-item>
-                    <el-dropdown-item v-if="article.currentArticle.status!=0">
-                      <el-button
-                        type="text"
-                        size="medium"
-                        style="color: #333;width:100%;text-align: left"
-                        @click="onArticlePublish(0)">
-                        <i class="fa fa-lock" style="width: 14px;"></i> 设为私密
-                      </el-button>
-                    </el-dropdown-item>
-                    <el-dropdown-item>
-                      <el-button
-                        type="text"
-                        size="medium"
-                        style="color: #333;width:100%;text-align: left"
-                        @click="onArticleComment(article.currentArticle.comment!=0?0:1)">
-                        <i class="fa fa-remove" style="width: 14px;"></i> {{article.currentArticle.comment!=0?'展示评论':'关闭评论'}}
-                      </el-button>
-                    </el-dropdown-item>
+                        </el-button>
+                      </el-dropdown-item>
+                    </template>
+                    <!-- 已发布 -->
+                    <template v-else>
+                      <!-- 在新窗口打开 -->
+                      <el-dropdown-item>
+                        <el-button
+                          type="text"
+                          size="medium"
+                          style="color: #333;width:100%;text-align: left">
+                          在新窗口打开
+                        </el-button>
+                      </el-dropdown-item>
+                      <!-- 发布更新 -->
+                      <el-dropdown-item v-if="a.historyId&&a.historyId!=a.lastestId">
+                        <el-button
+                          type="text"
+                          size="medium"
+                          style="color: #333;width:100%;text-align: left"
+                          @click="onArticlePublish(1)">
+                          <i class="fa fa-refresh" style="width: 14px;"></i> 发布更新
+                        </el-button>
+                      </el-dropdown-item>
+                      <!-- 设为私密 -->
+                      <el-dropdown-item>
+                        <el-button
+                          type="text"
+                          size="medium"
+                          style="color: #333;width:100%;text-align: left"
+                          @click="onArticlePublish(0)">
+                          <i class="fa fa-lock" style="width: 14px;"></i> 设为私密
+                        </el-button>
+                      </el-dropdown-item>
+                      <!-- 关闭评论 -->
+                      <el-dropdown-item>
+                        <el-button
+                          type="text"
+                          size="medium"
+                          style="color: #333;width:100%;text-align: left"
+                          @click="onArticleComment(article.currentArticle.comment!=0?0:1)">
+                          <i class="fa fa-comment" style="width: 14px;"></i> {{article.currentArticle.comment!=0?'展示评论':'关闭评论'}}
+                        </el-button>
+                      </el-dropdown-item>
+                      <!-- 置顶 -->
+                      <el-dropdown-item>
+                        <el-button
+                          type="text"
+                          size="medium"
+                          style="color: #333;width:100%;text-align: left"
+                          @click="onArticleTop(article.currentArticle.top==0?1:0)">
+                          <template v-if="article.currentArticle.top==0">
+                            <i class="fa fa-fire" style="width: 14px;"></i> 置顶
+                          </template>
+                          <template v-else>
+                            <i class="fa fa-fire" style="width: 14px;"></i> 取消置顶
+                          </template>
+                        </el-button>
+                      </el-dropdown-item>
+                    </template>
+                    <!-- 查看历史 -->
                     <el-dropdown-item>
                       <el-button
                         type="text"
@@ -187,6 +218,7 @@
                         <i class="fa fa-clock-o" style="width: 14px;"></i> 查看历史
                       </el-button>
                     </el-dropdown-item>
+                    <!-- 移动到 -->
                     <el-dropdown-item>
                       <el-popover
                         placement="left"
@@ -211,6 +243,7 @@
                         </el-button>
                       </el-popover>
                     </el-dropdown-item>
+                    <!-- 删除文章 -->
                     <el-dropdown-item>
                       <el-button
                         type="text"
@@ -229,8 +262,12 @@
                   <template v-else>
                     <span>已发布</span>
                     <span style="margin-left: 10px">{{a.comment==0?'评论已展示':'评论已关闭'}}</span>
-                    <span style="margin-left: 10px;color:#ec7259">{{a.historyId?a.historyId!=a.lastestId?'有更新':'':''}}</span>
-                    <span style="margin-left: 10px;color:#ec7259">{{a.top==1?'已置顶':''}}</span>
+                    <template v-if="a.historyId && a.historyId!=a.lastestId">
+                      <span style="margin-left: 10px;color:#ec7259">有更新</span>
+                    </template>
+                    <template v-if="a.top==1">
+                      <span style="margin-left: 10px;color:#ec7259">已置顶</span>
+                    </template>
                   </template>
                 </div>
               </li>
@@ -387,6 +424,7 @@
             content: "",
             html: "",
             tags: "",
+            top: 0,
             status: 0,
             comment: 0,
             historyId: 0,
@@ -802,12 +840,19 @@
         let vm = this;
         article.comment.r(vm.article.currentArticle.id, status)
           .then(data => {
-            vm.article.currentArticle.comment = status;
-            for (var i = 0; i < vm.article.articles.length; i++) {
-              if (vm.article.currentArticle.id == vm.article.articles[i].id) {
-                vm.article.articles[i].comment = status;
-              }
-            }
+            vm.article.currentArticle.comment = data.comment;
+            vm.$message({
+              type: 'info',
+              message: '操作成功',
+              duration: 1000
+            });
+          })
+      },
+      onArticleTop(status) {
+        let vm = this;
+        article.top.r(vm.article.currentArticle.id, status)
+          .then(data => {
+            vm.article.currentArticle.top = data.top;
             vm.$message({
               type: 'info',
               message: '操作成功',
