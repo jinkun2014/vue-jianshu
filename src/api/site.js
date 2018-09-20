@@ -1,17 +1,15 @@
 import instance from './index';
-import Qs from 'qs';
 
-const preUrlPath = '';
+const preUrlPath = '/blog/site';
 
 //查询列表
-const list = {
-  p: ['get,/users'],//暂时没用留作权限控制使用
-  r: params => {
-    return instance.get(preUrlPath + '/users', {params})
+const get = {
+  p: ['get,/{id}/user'],//暂时没用留作权限控制使用
+  r: (id, params) => {
+    return instance.get(preUrlPath + '/' + id + '/user', {params})
   }
 };
 
-
 export {
-  list,
+  get,
 }

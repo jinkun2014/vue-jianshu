@@ -31,7 +31,7 @@
 
 <script>
   import * as util from '../../assets/util'
-  import * as login from '../../api/login';
+  import * as site from '../../api/site'
 
   export default {
     data() {
@@ -42,11 +42,23 @@
           url: '',
           keyword: '',
           theme: 'default',
-          sign: '<div><br><font color="green"><b>---- EOF ----</b></font><br><br><div><a href="https://hacpai.com/register?r=88250" target="_blank">哈哈，这里是默认签名</a></div><br></div>',
+          sign: '',
         }
       }
     },
     methods: {
+      get() {
+        let vm = this;
+        let user = util.session('user');
+
+        site.get.r(user.id)
+          .then(data => {
+            if (data) {
+              vm.site = data;
+            }
+          })
+          .catch(util.catchError)
+      },
       onSubmit() {
         console.log('submit!');
       },
@@ -54,6 +66,9 @@
         let vm = this;
         vm.$router.push({path: "/write"})
       }
+    },
+    created() {
+      this.get()
     }
   }
 </script>
