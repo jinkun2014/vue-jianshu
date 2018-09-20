@@ -1,10 +1,5 @@
 export default [
   {
-    path: '/test',
-    name: '测试',
-    component: (resolve) => require(['../views/test/test.vue'], resolve),
-  },
-  {
     path: '/write',
     name: '写文章',
     component: (resolve) => require(['../views/write/write.vue'], resolve),
@@ -18,5 +13,10 @@ export default [
     path: '/trash',
     name: '回收站',
     component: (resolve) => require(['../views/trash/trash.vue'], resolve),
+  },
+  {
+    path: '/site',
+    name: '站点设置',
+    component: (resolve) => require(['../views/site/site.vue'], resolve),
   }
 ]

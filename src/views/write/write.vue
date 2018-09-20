@@ -98,6 +98,9 @@
             <div class="click-item" @click="onTrashClick">
               <i class="fa fa-trash-o"></i> 回收站
             </div>
+            <div class="click-item" @click="onSiteClick">
+              <i class="fa fa-trash-o"></i> 站点设置
+            </div>
             <div class="click-item" @click="onLogout">
               <i class="fa fa-sign-out"></i> 退出
             </div>
@@ -214,7 +217,7 @@
                         type="text"
                         size="medium"
                         style="color: #333;width:100%;text-align: left"
-                        @click="onCheckHistory(a.id)">
+                        @click="onCheckHistory()">
                         <i class="fa fa-clock-o" style="width: 14px;"></i> 查看历史
                       </el-button>
                     </el-dropdown-item>
@@ -892,7 +895,7 @@
       imgDel(pos, $file) {
         console.info(pos + "-" + $file)
       },
-      onCheckHistory(id) {
+      onCheckHistory() {
         this.$router.push({path: '/history'});
       },
       onMoveCategory(row, event, column) {
@@ -910,6 +913,9 @@
       },
       onTrashClick() {
         this.$router.push({path: '/trash'});
+      },
+      onSiteClick() {
+        this.$router.push({path: '/site'});
       },
       onExportAll() {
         window.open("/res/export/all")
