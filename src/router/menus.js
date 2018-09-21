@@ -15,8 +15,8 @@ export default [
     component: (resolve) => require(['../views/trash/trash.vue'], resolve),
   },
   {
-    path: '/site',
-    name: '站点设置',
-    component: (resolve) => require(['../views/site/site.vue'], resolve),
+    path: '/basic',
+    name: '基本设置',
+    component: (resolve) => require(['../views/basic/basic.vue'], resolve),
   }
 ]

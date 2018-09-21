@@ -1,9 +1,8 @@
 <template>
   <el-row style="height: 100%;">
     <!-- 文集列表 -->
-    <el-col :span="4" style="height: 100%;">
-      <div style="background: #404040;height: 100%;overflow:auto;"
-           v-loading="category.listLoading">
+    <el-col :span="4" style="height: 100%;background: #404040;">
+      <div style="height: 100%;overflow:auto;" v-loading="category.listLoading">
         <!-- 回到首页 -->
         <div style="padding: 15px 0;text-align: center;">
           <el-button round style="width: 80%;color:#ec7259;background: transparent;border: 1px solid #ec7259;">回首页</el-button>
@@ -85,6 +84,7 @@
             </draggable>
           </ul>
         </div>
+        <!-- 设置 -->
         <div class="setting">
           <el-popover
             placement="top"
@@ -98,8 +98,8 @@
             <div class="click-item" @click="onTrashClick">
               <i class="fa fa-trash-o"></i> 回收站
             </div>
-            <div class="click-item" @click="onSiteClick">
-              <i class="fa fa-trash-o"></i> 站点设置
+            <div class="click-item" @click="onBasicClick">
+              <i class="fa fa-gear"></i> 基本设置
             </div>
             <div class="click-item" @click="onLogout">
               <i class="fa fa-sign-out"></i> 退出
@@ -914,8 +914,8 @@
       onTrashClick() {
         this.$router.push({path: '/trash'});
       },
-      onSiteClick() {
-        this.$router.push({path: '/site'});
+      onBasicClick() {
+        this.$router.push({path: '/basic'});
       },
       onExportAll() {
         window.open("/res/export/all")
